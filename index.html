@@ -6,6 +6,24 @@
 <title>LegendsTimer — Metin2 Resp Timer</title>
 <meta name="description" content="Timery respawnu do Metin2 z polskim lektorem AI, ostrzeżenie do 5 minut przed końcem.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='2' width='60' height='60' rx='14' fill='%23120d07' stroke='%23d9b45b' stroke-width='4'/%3E%3Cpath d='M23 13h10v29h18v9H23z' fill='%23f2d98a'/%3E%3C/svg%3E">
+<!-- ═══════════════════════════════════════════════════════════════
+     KONFIGURACJA SYNCHRONIZACJI (Firebase Realtime Database)
+
+     Wklej tutaj dane ze swojego projektu Firebase, żeby timery
+     były wspólne dla całej ekipy w czasie rzeczywistym.
+
+     Dopóki "databaseURL" jest puste, strona działa w trybie
+     lokalnym — dokładnie jak dotąd, timery widzisz tylko Ty.
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+window.FIREBASE_CONFIG = {
+  apiKey:      "AIzaSyCdNbFoMY1DpqE_U3u8NlG4igqfNG4PZmY",
+  authDomain:  "legendstimer-e29b8.firebaseapp.com",
+  databaseURL: "https://legendstimer-e29b8-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:   "legendstimer-e29b8"
+};
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
@@ -106,11 +124,45 @@ h1{
   box-shadow:0 0 12px rgba(217,180,91,.8);
 }
 
+/* ---------- pasek pokoju / synchronizacji ---------- */
+.roombar{
+  display:flex; flex-wrap:wrap; gap:10px;
+  align-items:center; justify-content:center;
+  margin:20px auto 0;
+  max-width:1100px;
+  padding:12px 16px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:linear-gradient(180deg, rgba(30,22,12,.8), rgba(10,8,4,.8));
+}
+
+.status{
+  display:inline-flex; align-items:center; gap:8px;
+  font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  padding:7px 13px; border-radius:20px;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.45);
+  color:var(--muted);
+  white-space:nowrap;
+}
+.status i{
+  width:9px; height:9px; border-radius:50%;
+  background:var(--muted); flex:0 0 auto;
+}
+.status.online   { color:#8ff0ab; border-color:#2f8f4a; }
+.status.online i { background:#56d97a; box-shadow:0 0 10px #56d97a; animation:blink 2s infinite; }
+.status.connecting   { color:#f0d071; border-color:#8d7333; }
+.status.connecting i { background:#e8c25a; animation:blink .8s infinite; }
+.status.error   { color:#ff9d9d; border-color:#7a1414; }
+.status.error i { background:#b52020; }
+
+@keyframes blink{ 0%,100%{opacity:1} 50%{opacity:.35} }
+
 /* ---------- pasek sterowania ---------- */
 .toolbar{
   display:flex; flex-wrap:wrap; gap:10px;
   align-items:center; justify-content:center;
-  margin:20px auto 26px;
+  margin:10px auto 26px;
   max-width:1100px;
   padding:14px 16px;
   border:1px solid var(--line);
@@ -400,6 +452,18 @@ kbd{
   <div class="divider"></div>
 </header>
 
+<div class="roombar">
+  <span class="status" id="syncStatus"><i></i><span id="syncText">Tryb lokalny</span></span>
+
+  <div class="tool-group">
+    <span>Pokój</span>
+    <input type="text" id="roomInput" placeholder="np. gildia-xyz" style="width:170px">
+    <button class="btn" id="roomGo">Wejdź</button>
+  </div>
+
+  <button class="btn" id="copyLink">Kopiuj link dla ekipy</button>
+</div>
+
 <div class="toolbar">
   <button class="btn primary" id="addRow">+ Dodaj timer</button>
   <button class="btn danger" id="clearAll">Wyczyść wszystko</button>
@@ -465,6 +529,26 @@ const WARN_TEXT = {
 
 const el = (id) => document.getElementById(id);
 
+/* ---------------------------------------------------------
+   ZEGAR WSPÓLNY
+   Timery trzymają moment zakończenia (epoch ms). Gdyby ktoś
+   miał przestawiony zegar w komputerze, widziałby inny czas
+   niż reszta — dlatego wszystko liczymy w czasie serwera.
+   --------------------------------------------------------- */
+let serverOffset = 0;
+const now = () => Date.now() + serverOffset;
+
+/* nazwa pokoju z adresu: .../LegendsTimer/#gildia-xyz */
+function roomFromUrl() {
+  const raw = decodeURIComponent((location.hash || "").replace(/^#/, "")).trim();
+  return cleanRoom(raw) || "publiczny";
+}
+function cleanRoom(s) {
+  return String(s).toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
+}
+
+const ROOM = roomFromUrl();
+
 let state = {
   rows: [],
   settings: { voiceOn:true, beepOn:true, warnAt:300, vol:1, voiceURI:"", warnV2:true }
@@ -480,6 +564,7 @@ function newRow(name = "", place = "", minutes = "") {
 
 function save() {
   try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+  schedulePush();
 }
 
 function load() {
@@ -516,6 +601,147 @@ function load() {
     return true;
   } catch (e) { return false; }
 }
+
+/* =========================================================
+   SYNCHRONIZACJA W CZASIE RZECZYWISTYM
+
+   Do chmury lecą tylko dane wspólne: nazwa, miejsce, minuty
+   i momenty zakończenia kanałów. Ustawienia (głos, głośność,
+   wyprzedzenie) zostają prywatne — każdy ma swoje.
+
+   Flagi "warned/ended" też są prywatne, dzięki czemu lektor
+   odzywa się u każdego z osobna, a nie tylko u autora timera.
+   ========================================================= */
+
+let applyingRemote = false;   // blokada pętli zwrotnej podczas odbioru
+let pushTimer = null;
+let lastSent  = "";
+
+/* co wysyłamy do chmury */
+function rowsPayload() {
+  return state.rows.map(r => ({
+    id:      r.id,
+    name:    r.name  || "",
+    place:   r.place || "",
+    minutes: String(r.minutes === 0 || r.minutes ? r.minutes : ""),
+    ch:      r.ch.map(c => ({ end: c.end || 0, finishedAt: c.finishedAt || 0 }))
+  }));
+}
+
+function schedulePush() {
+  if (applyingRemote || !cloud.push) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(() => {
+    const payload = rowsPayload();
+    const json = JSON.stringify(payload);
+    if (json === lastSent) return;      // nic się nie zmieniło
+    lastSent = json;
+    cloud.push(payload);
+  }, 250);
+}
+
+/* co przychodzi z chmury */
+function applyRemote(raw) {
+  const list = Array.isArray(raw) ? raw : (raw && typeof raw === "object" ? Object.values(raw) : []);
+  if (!list.length) return;
+
+  lastSent = "";   // wymuś porównanie przy następnej wysyłce
+
+  const structural =
+    list.length !== state.rows.length ||
+    list.some((r, i) => !state.rows[i] || state.rows[i].id !== r.id);
+
+  const t = now();
+
+  const next = list.map(r => {
+    const row = state.rows.find(x => x.id === r.id) || newRow();
+    row.id      = r.id || row.id;
+    row.name    = r.name  || "";
+    row.place   = r.place || "";
+    row.minutes = r.minutes || "";
+
+    const ch = Array.isArray(r.ch) ? r.ch : (r.ch ? Object.values(r.ch) : []);
+    for (let j = 0; j < CHANNELS; j++) {
+      const inc = ch[j] || {};
+      const cur = row.ch[j] || { end:0, finishedAt:0, warned:false, ended:false };
+      const end = Number(inc.end) || 0;
+
+      if (end !== cur.end) {
+        /* Timer ustawiony/zmieniony przez kogoś innego.
+           Jeśli zdążył już minąć, nie krzyczymy o tym po wejściu na stronę. */
+        const past  = end > 0 && end <= t;
+        cur.warned  = past;
+        cur.ended   = past;
+      }
+      cur.end        = end;
+      cur.finishedAt = Number(inc.finishedAt) || 0;
+      if (!end) { cur.warned = false; cur.ended = false; }
+      row.ch[j] = cur;
+    }
+    return row;
+  });
+
+  applyingRemote = true;
+  state.rows = next;
+  if (structural) render(); else refreshInputs();
+  applyingRemote = false;
+
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+  tick();
+}
+
+/* podmiana treści pól bez przerywania komuś pisania */
+function refreshInputs() {
+  state.rows.forEach(row => {
+    const wrap = document.querySelector('.row[data-row="' + row.id + '"]');
+    if (!wrap) return;
+    const inputs = wrap.querySelectorAll(".row-head input");
+    const values = [row.name, row.place, row.minutes];
+    inputs.forEach((inp, i) => {
+      const v = String(values[i] == null ? "" : values[i]);
+      if (document.activeElement !== inp && inp.value !== v) inp.value = v;
+    });
+  });
+}
+
+/* most do modułu Firebase (ładowanego niżej) */
+const cloud = {
+  room: ROOM,
+  cid: "c" + Math.random().toString(36).slice(2, 10),
+  push: null,
+  peers: 0,
+
+  setOffset(ms) { serverOffset = ms; },
+  incoming(data) {
+    if (data == null) { lastSent = ""; schedulePush(); }   // pusty pokój — zasiej go
+    else applyRemote(data);
+  },
+  setPeers(n) { cloud.peers = n; cloud.status(cloud.state || "online"); },
+
+  state: "local",
+  status(kind, detail) {
+    cloud.state = kind;
+    const pill = el("syncStatus");
+    const text = el("syncText");
+    if (!pill || !text) return;
+    pill.className = "status " + (kind === "local" ? "" : kind);
+
+    if (kind === "online") {
+      const n = cloud.peers || 1;
+      const osoby = n === 1 ? "1 osoba" : (n < 5 ? n + " osoby" : n + " osób");
+      text.textContent = "Na żywo · " + cloud.room + " · " + osoby;
+    } else if (kind === "connecting") {
+      text.textContent = "Łączenie…";
+    } else if (kind === "error") {
+      text.textContent = "Błąd synchronizacji";
+      if (detail) pill.title = detail;
+    } else {
+      text.textContent = "Tryb lokalny";
+      pill.title = "Timery widzisz tylko Ty. Wklej konfigurację Firebase w index.html, aby włączyć wspólne timery.";
+    }
+  }
+};
+window.__cloud = cloud;
 
 /* =========================================================
    DŹWIĘK — gong generowany w przeglądarce (bez plików zewnętrznych)
@@ -710,7 +936,7 @@ function buildRow(row) {
         return;
       }
       row.ch[j] = {
-        end: Date.now() + minutes * 60000,
+        end: now() + minutes * 60000,
         finishedAt: 0,
         warned: false,
         ended: false
@@ -750,7 +976,7 @@ function format(sec) {
 }
 
 function tick() {
-  const now = Date.now();
+  const t = now();
   let dirty = false;
 
   document.querySelectorAll(".main-btn").forEach(btn => {
@@ -765,7 +991,7 @@ function tick() {
       return;
     }
 
-    const remaining = Math.ceil((c.end - now) / 1000);
+    const remaining = Math.ceil((c.end - t) / 1000);
 
     if (remaining > 0) {
       /* ostrzeżenie lektora — dokładnie raz */
@@ -787,7 +1013,7 @@ function tick() {
     /* czas minął */
     if (!c.ended) {
       c.ended = true;
-      c.finishedAt = now;
+      c.finishedAt = t;
       c.warned = true;
       dirty = true;
       gong(2);
@@ -795,7 +1021,7 @@ function tick() {
     }
     if (!c.finishedAt) { c.finishedAt = c.end; dirty = true; }
 
-    const elapsed = Math.floor((now - c.finishedAt) / 1000);
+    const elapsed = Math.floor((t - c.finishedAt) / 1000);
     if (elapsed >= UP_AFTER) {
       btn.textContent = "UP";
       btn.className = "main-btn up";
@@ -839,6 +1065,34 @@ function bindToolbar() {
 
   el("voiceSelect").onchange = (e) => { state.settings.voiceURI = e.target.value; save(); };
 
+  /* --- pokój --- */
+  const roomInput = el("roomInput");
+  roomInput.value = ROOM;
+
+  const goToRoom = () => {
+    const target = cleanRoom(roomInput.value) || "publiczny";
+    if (target === ROOM) return;
+    location.hash = target;
+    location.reload();          // przełączenie pokoju = świeże połączenie
+  };
+  el("roomGo").onclick = goToRoom;
+  roomInput.addEventListener("keydown", e => { if (e.key === "Enter") goToRoom(); });
+
+  el("copyLink").onclick = async (e) => {
+    const link = location.origin + location.pathname + "#" + ROOM;
+    const btn = e.currentTarget;
+    const old = btn.textContent;
+    try {
+      await navigator.clipboard.writeText(link);
+      btn.textContent = "Skopiowano!";
+    } catch (err) {
+      window.prompt("Skopiuj link i wyślij ekipie:", link);
+      btn.textContent = old;
+      return;
+    }
+    setTimeout(() => btn.textContent = old, 1600);
+  };
+
   el("testVoice").onclick = () => {
     ensureAudio();
     gong(1);
@@ -863,6 +1117,7 @@ if (!load()) {
 }
 
 bindToolbar();
+cloud.status(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.databaseURL ? "connecting" : "local");
 render();
 tick();
 setInterval(tick, 250);
@@ -880,9 +1135,61 @@ if ("speechSynthesis" in window) {
 
 /* ostrzeżenie przed zamknięciem, gdy coś tyka */
 window.addEventListener("beforeunload", (e) => {
-  const running = state.rows.some(r => r.ch.some(c => c.end && c.end > Date.now()));
+  const running = state.rows.some(r => r.ch.some(c => c.end && c.end > now()));
   if (running) { e.preventDefault(); e.returnValue = ""; }
 });
+</script>
+
+<!-- =========================================================
+     PODŁĄCZENIE DO FIREBASE
+     Uruchamia się tylko wtedy, gdy u góry pliku wpisano
+     databaseURL. Bez tego strona po prostu działa lokalnie.
+     ========================================================= -->
+<script type="module">
+const cloud = window.__cloud;
+const cfg   = window.FIREBASE_CONFIG || {};
+
+if (!cfg.databaseURL) {
+  cloud.status("local");
+} else {
+  try {
+    const { initializeApp } =
+      await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
+    const { getDatabase, ref, onValue, set, onDisconnect } =
+      await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js");
+
+    const db   = getDatabase(initializeApp(cfg));
+    const base = "rooms/" + cloud.room;
+
+    const rowsRef = ref(db, base + "/rows");
+    const meRef   = ref(db, base + "/presence/" + cloud.cid);
+    const allRef  = ref(db, base + "/presence");
+
+    /* różnica między zegarem serwera a zegarem tego komputera */
+    onValue(ref(db, ".info/serverTimeOffset"), s => cloud.setOffset(Number(s.val()) || 0));
+
+    /* stan połączenia + obecność (wpis znika sam po zamknięciu karty) */
+    onValue(ref(db, ".info/connected"), s => {
+      if (!s.val()) { cloud.status("connecting"); return; }
+      onDisconnect(meRef).remove();
+      set(meRef, true);
+      cloud.status("online");
+    });
+
+    onValue(allRef, s => cloud.setPeers(s.val() ? Object.keys(s.val()).length : 1));
+
+    /* timery — źródło prawdy dla całej ekipy */
+    onValue(rowsRef, s => cloud.incoming(s.val()),
+            err => cloud.status("error", err.message));
+
+    cloud.push = (payload) =>
+      set(rowsRef, payload).catch(err => cloud.status("error", err.message));
+
+  } catch (err) {
+    cloud.status("error", err && err.message);
+    console.error("[sync]", err);
+  }
+}
 </script>
 
 </body>
