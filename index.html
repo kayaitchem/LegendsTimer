@@ -241,7 +241,7 @@ input[type="range"]{ accent-color:var(--gold); width:110px; }
 
 .row-head{
   display:grid;
-  grid-template-columns: 1.4fr 1.4fr 130px auto;
+  grid-template-columns: 1.4fr 1.4fr 130px auto auto;
   gap:10px;
   align-items:center;
   margin-bottom:16px;
@@ -255,6 +255,30 @@ input[type="range"]{ accent-color:var(--gold); width:110px; }
   font-size:9px; letter-spacing:.18em; text-transform:uppercase;
   color:var(--gold-dim); background:#170f07; padding:0 6px; border-radius:4px;
 }
+
+/* wyciszenie pojedynczego timera (ustawienie prywatne) */
+.row-mute{
+  border:1px solid var(--line);
+  background:linear-gradient(180deg, #2c2011, #171009);
+  color:var(--gold-2);
+  border-radius:10px;
+  width:38px; height:38px;
+  font-size:15px;
+  line-height:1;
+  cursor:pointer;
+  transition:.15s ease;
+}
+.row-mute:hover{ border-color:var(--gold); box-shadow:0 0 12px rgba(217,180,91,.3); }
+
+.row.muted .row-mute{
+  color:#8a7a5c;
+  border-color:#3a2c16;
+  background:linear-gradient(180deg, #1a1409, #0d0904);
+}
+
+/* wyciszony rząd traci trochę blasku — widać go od razu */
+.row.muted{ opacity:.72; }
+.row.muted .label{ color:var(--muted); border-color:rgba(217,180,91,.10); background:rgba(255,255,255,.03); }
 
 .row-del{
   border:1px solid #5d1b1b;
@@ -502,6 +526,7 @@ kbd{
 
 <footer>
   Kliknij <b>kanał</b>, aby wystartować odliczanie z wpisanej liczby minut. <kbd>RESET</kbd> czyści pojedynczy kanał.<br>
+  <b>🔊</b> przy timerze wycisza go <b>tylko u Ciebie</b> — reszta ekipy słyszy dalej.<br>
   Lektor czyta <b>nazwę + miejsce + kanał</b> z wybranym wyprzedzeniem (<b>do 5 minut</b>) oraz w chwili respu. Timery przeżywają odświeżenie strony.<br>
   Kolory: <b style="color:#ff8b8b">czerwony</b> = odliczanie · <b style="color:#f0b040">pomarańcz</b> = ostrzeżenie · <b style="color:#ffe08a">złoty (pulsuje)</b> = ostatnia minuta · <b style="color:#7de89a">zielony</b> = resp · <b style="color:#7cc4ff">niebieski</b> = UP
 </footer>
@@ -551,7 +576,7 @@ const ROOM = roomFromUrl();
 
 let state = {
   rows: [],
-  settings: { voiceOn:true, beepOn:true, warnAt:300, vol:1, voiceURI:"", warnV2:true }
+  settings: { voiceOn:true, beepOn:true, warnAt:300, vol:1, voiceURI:"", warnV2:true, muted:{} }
 };
 
 function newRow(name = "", place = "", minutes = "") {
@@ -563,8 +588,17 @@ function newRow(name = "", place = "", minutes = "") {
 }
 
 function save() {
+  pruneMuted();
   try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
   schedulePush();
+}
+
+/* wyciszenia usuniętych timerów nie mają po co zalegać */
+function pruneMuted() {
+  const m = state.settings.muted;
+  if (!m || !state.rows.length) return;
+  const live = new Set(state.rows.map(r => r.id));
+  Object.keys(m).forEach(id => { if (!live.has(id)) delete m[id]; });
 }
 
 function load() {
@@ -598,6 +632,7 @@ function load() {
       state.settings.warnV2 = true;
     }
     if (!WARN_TEXT[state.settings.warnAt]) state.settings.warnAt = 300;
+    if (!state.settings.muted || typeof state.settings.muted !== "object") state.settings.muted = {};
     return true;
   } catch (e) { return false; }
 }
@@ -896,6 +931,25 @@ function buildRow(row) {
   head.appendChild(mkField("Miejsce","np. Mroczna Świątynia", "text",   row.place,   v => row.place = v));
   head.appendChild(mkField("Minuty", "czas (min)",            "number", row.minutes, v => row.minutes = v));
 
+  /* wyciszenie — dotyczy tylko tej przeglądarki, reszta ekipy nadal słyszy */
+  const mute = document.createElement("button");
+  mute.className = "row-mute";
+  const paintMute = () => {
+    const off = isMuted(row.id);
+    mute.textContent = off ? "🔇" : "🔊";
+    mute.title = off
+      ? "Ten timer jest wyciszony — kliknij, aby włączyć lektor i gong"
+      : "Wycisz ten timer (tylko u Ciebie)";
+    wrap.classList.toggle("muted", off);
+  };
+  mute.onclick = () => {
+    if (isMuted(row.id)) delete state.settings.muted[row.id];
+    else state.settings.muted[row.id] = true;
+    paintMute();
+    save();
+  };
+  head.appendChild(mute);
+
   const del = document.createElement("button");
   del.className = "row-del";
   del.title = "Usuń ten timer";
@@ -962,7 +1016,13 @@ function buildRow(row) {
 
   wrap.appendChild(head);
   wrap.appendChild(channels);
+  paintMute();
   return wrap;
+}
+
+/* czy ten timer jest u mnie wyciszony */
+function isMuted(rowId) {
+  return !!(state.settings.muted && state.settings.muted[rowId]);
 }
 
 /* =========================================================
@@ -997,8 +1057,10 @@ function tick() {
       /* ostrzeżenie lektora — dokładnie raz */
       if (!c.warned && remaining <= state.settings.warnAt) {
         c.warned = true; dirty = true;
-        gong(1);
-        speak(announcement(row, j, "warn"));
+        if (!isMuted(row.id)) {
+          gong(1);
+          speak(announcement(row, j, "warn"));
+        }
       }
 
       /* pomarańcz zapala się dokładnie wtedy, gdy odzywa się lektor */
@@ -1016,8 +1078,10 @@ function tick() {
       c.finishedAt = t;
       c.warned = true;
       dirty = true;
-      gong(2);
-      speak(announcement(row, j, "end"));
+      if (!isMuted(row.id)) {
+        gong(2);
+        speak(announcement(row, j, "end"));
+      }
     }
     if (!c.finishedAt) { c.finishedAt = c.end; dirty = true; }
 

@@ -33,6 +33,8 @@ który z wyprzedzeniem do **5 minut** czyta **nazwę + miejsce + kanał**.
 1. Wpisz **nazwę**, **miejsce** i **liczbę minut**.
 2. Kliknij kanał (`CH1`–`CH5`), żeby wystartować odliczanie.
 3. `RESET` czyści pojedynczy kanał, `✕` usuwa cały timer.
+4. `🔊` wycisza wybrany timer — **tylko u Ciebie**. Wyciszony rząd nadal odlicza
+   i jest widoczny (przygaszony), po prostu milczy. Reszta ekipy słyszy go normalnie.
 4. Przycisk **Test głosu** sprawdza, czy lektor działa.
 
 ## Wymagania lektora
@@ -88,6 +90,7 @@ dlatego warto wybrać nazwę, której nikt nie zgadnie.
 | nazwa, miejsce, minuty | wybrany głos lektora |
 | momenty zakończenia kanałów | głośność, wyprzedzenie ostrzeżenia |
 | | włącznik lektora i gongu |
+| | wyciszenie pojedynczych timerów |
 
 Lektor odzywa się **u każdego osobno** — nie tylko u osoby, która ustawiła timer.
 Czas liczony jest zegarem serwera, więc przestawiony zegar w czyimś komputerze
