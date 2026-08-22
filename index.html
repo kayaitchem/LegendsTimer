@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metin2 — Resp Timer</title>
+<meta name="description" content="Timery respawnu do Metin2 z polskim lektorem AI (ostrzeżenie na minutę przed końcem).">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%23120d07' stroke='%23d9b45b' stroke-width='4'/%3E%3Cpath d='M32 12v20l14 8' stroke='%23f2d98a' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --ink:      #080603;
+  --panel:    #150f08;
+  --panel-2:  #241a0e;
+  --line:     #4a3618;
+  --gold:     #d9b45b;
+  --gold-2:   #f5e2a6;
+  --gold-dim: #8d7333;
+  --blood:    #7a1414;
+  --blood-2:  #b52020;
+  --jade:     #2f8f4a;
+  --jade-2:   #56d97a;
+  --sky:      #1f5fa8;
+  --sky-2:    #4fa8ff;
+  --parch:    #ead9b4;
+  --muted:    #9c8a68;
+}
+
+*{ box-sizing:border-box; }
+
+html,body{ height:100%; }
+
+body{
+  margin:0;
+  padding:26px 18px 60px;
+  color:var(--parch);
+  font-family:'Inter', Arial, sans-serif;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(217,180,91,.10), transparent 60%),
+    radial-gradient(900px 500px at 10% 110%, rgba(122,20,20,.18), transparent 60%),
+    repeating-linear-gradient(45deg, rgba(255,255,255,.012) 0 2px, transparent 2px 6px),
+    linear-gradient(180deg, #0d0a05, #050403 70%);
+  background-attachment:fixed;
+  min-height:100%;
+}
+
+/* ---------- nagłówek ---------- */
+header{ text-align:center; margin-bottom:22px; }
+
+h1{
+  margin:0;
+  font-family:'Cinzel', Georgia, serif;
+  font-weight:900;
+  font-size:clamp(26px, 5vw, 44px);
+  letter-spacing:.14em;
+  color:var(--gold-2);
+  text-shadow:0 0 18px rgba(217,180,91,.35), 0 3px 0 #2a1d0a, 0 6px 20px #000;
+}
+
+.sub{
+  margin:6px 0 0;
+  font-size:12px;
+  letter-spacing:.32em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+
+.divider{
+  width:min(560px, 92%);
+  height:14px;
+  margin:14px auto 0;
+  background:
+    linear-gradient(90deg, transparent, var(--gold-dim) 18%, var(--gold) 50%, var(--gold-dim) 82%, transparent) center/100% 1px no-repeat;
+  position:relative;
+}
+.divider::after{
+  content:"";
+  position:absolute; left:50%; top:50%;
+  width:12px; height:12px;
+  transform:translate(-50%,-50%) rotate(45deg);
+  background:var(--gold);
+  box-shadow:0 0 12px rgba(217,180,91,.8);
+}
+
+/* ---------- pasek sterowania ---------- */
+.toolbar{
+  display:flex; flex-wrap:wrap; gap:10px;
+  align-items:center; justify-content:center;
+  margin:20px auto 26px;
+  max-width:1100px;
+  padding:14px 16px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:linear-gradient(180deg, rgba(36,26,14,.85), rgba(12,9,5,.85));
+  box-shadow:inset 0 1px 0 rgba(245,226,166,.08), 0 16px 40px rgba(0,0,0,.7);
+}
+
+.tool-group{ display:flex; align-items:center; gap:8px; }
+
+.tool-group > span{
+  font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted);
+}
+
+.btn{
+  font-family:'Inter', Arial, sans-serif;
+  font-weight:700;
+  font-size:12px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:9px 15px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:linear-gradient(180deg, #2c2011, #171009);
+  color:var(--gold-2);
+  cursor:pointer;
+  transition:.15s ease;
+}
+.btn:hover{ border-color:var(--gold); box-shadow:0 0 14px rgba(217,180,91,.28); transform:translateY(-1px); }
+.btn:active{ transform:translateY(0); }
+.btn.danger{ color:#ffb3b3; border-color:#5d1b1b; background:linear-gradient(180deg,#3a1010,#1c0808); }
+.btn.primary{ color:#12100a; background:linear-gradient(180deg, var(--gold-2), var(--gold)); border-color:var(--gold-2); }
+
+select, input[type="text"], input[type="number"]{
+  font-family:'Inter', Arial, sans-serif;
+  font-size:13px;
+  color:var(--parch);
+  background:rgba(0,0,0,.55);
+  border:1px solid var(--line);
+  border-radius:9px;
+  padding:9px 11px;
+  outline:none;
+  transition:.15s ease;
+}
+select:focus, input:focus{ border-color:var(--gold); box-shadow:0 0 0 2px rgba(217,180,91,.18); }
+input::placeholder{ color:#6f6046; }
+
+input[type="range"]{ accent-color:var(--gold); width:110px; }
+
+.switch{ display:flex; align-items:center; gap:7px; font-size:12px; color:var(--parch); cursor:pointer; user-select:none; }
+.switch input{ accent-color:var(--gold); width:16px; height:16px; cursor:pointer; }
+
+/* ---------- rząd timera ---------- */
+#app{ max-width:1100px; margin:0 auto; }
+
+.row{
+  position:relative;
+  padding:20px 20px 22px;
+  margin-bottom:22px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:
+    linear-gradient(180deg, rgba(40,29,16,.92), rgba(13,10,6,.94));
+  box-shadow:
+    0 24px 60px rgba(0,0,0,.85),
+    inset 0 1px 0 rgba(245,226,166,.07);
+}
+
+.row::before{
+  content:"";
+  position:absolute; inset:5px;
+  border:1px solid rgba(217,180,91,.14);
+  border-radius:13px;
+  pointer-events:none;
+}
+
+.row-head{
+  display:grid;
+  grid-template-columns: 1.4fr 1.4fr 130px auto;
+  gap:10px;
+  align-items:center;
+  margin-bottom:16px;
+}
+
+.row-head input{ width:100%; }
+
+.field{ position:relative; }
+.field .tag{
+  position:absolute; top:-8px; left:10px;
+  font-size:9px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--gold-dim); background:#170f07; padding:0 6px; border-radius:4px;
+}
+
+.row-del{
+  border:1px solid #5d1b1b;
+  background:linear-gradient(180deg,#3a1010,#1c0808);
+  color:#ff9d9d;
+  border-radius:10px;
+  width:38px; height:38px;
+  font-size:16px; font-weight:700;
+  cursor:pointer;
+  transition:.15s ease;
+}
+.row-del:hover{ box-shadow:0 0 12px rgba(181,32,32,.5); }
+
+/* ---------- kanały ---------- */
+.channels{
+  display:grid;
+  grid-template-columns:repeat(5, 1fr);
+  gap:12px;
+}
+
+.channel-box{ display:flex; flex-direction:column; }
+
+.label{
+  align-self:center;
+  font-family:'Cinzel', Georgia, serif;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.16em;
+  color:var(--gold);
+  margin-bottom:7px;
+  padding:3px 12px;
+  border-radius:20px;
+  background:rgba(217,180,91,.10);
+  border:1px solid rgba(217,180,91,.22);
+}
+
+.main-btn{
+  height:74px;
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:14px;
+  font-family:'JetBrains Mono', monospace;
+  font-size:clamp(15px, 2.4vw, 26px);
+  font-weight:700;
+  letter-spacing:.02em;
+  color:var(--parch);
+  background:linear-gradient(180deg, #221809, #100b06);
+  cursor:pointer;
+  transition:background .2s ease, box-shadow .2s ease, transform .1s ease;
+  text-shadow:0 2px 6px rgba(0,0,0,.8);
+}
+.main-btn:hover{ transform:translateY(-2px); }
+.main-btn:active{ transform:translateY(0); }
+
+.reset-btn{
+  margin-top:6px;
+  height:26px;
+  width:100%;
+  border:1px solid #4a2020;
+  border-radius:9px;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:.14em;
+  color:#c99;
+  background:linear-gradient(180deg,#2a0d0d,#150606);
+  cursor:pointer;
+  transition:.15s ease;
+}
+.reset-btn:hover{ color:#fdd; border-color:#7a1414; }
+
+/* stany */
+.empty{ color:#6b5c40; }
+
+.cooldown{
+  background:linear-gradient(180deg, var(--blood), #3d0a0a);
+  border-color:#8d2020;
+  color:#ffd9d9;
+}
+
+.alert{
+  background:linear-gradient(180deg, #c47a12, #7a3f05);
+  border-color:#e8a33a;
+  color:#fff3d6;
+}
+
+.critical{
+  background:linear-gradient(180deg, var(--gold-2), #d18f14);
+  border-color:#fff0c0;
+  color:#241703;
+  animation:pulse 1s infinite;
+}
+
+@keyframes pulse{
+  0%   { box-shadow:0 0 10px rgba(255,190,60,.6); }
+  50%  { box-shadow:0 0 34px rgba(255,225,140,.95); }
+  100% { box-shadow:0 0 10px rgba(255,190,60,.6); }
+}
+
+.ready{
+  background:linear-gradient(180deg, var(--jade-2), var(--jade));
+  border-color:#8dffae;
+  color:#04220e;
+}
+
+.up{
+  background:linear-gradient(180deg, var(--sky-2), var(--sky));
+  border-color:#9ad2ff;
+  color:#02182e;
+}
+
+/* ---------- stopka ---------- */
+footer{
+  max-width:1100px;
+  margin:34px auto 0;
+  padding-top:18px;
+  border-top:1px solid rgba(217,180,91,.15);
+  font-size:12px;
+  line-height:1.7;
+  color:var(--muted);
+  text-align:center;
+}
+footer b{ color:var(--gold); font-weight:600; }
+kbd{
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  background:rgba(217,180,91,.12);
+  border:1px solid rgba(217,180,91,.25);
+  border-radius:5px;
+  padding:1px 6px;
+  color:var(--gold-2);
+}
+
+@media (max-width:760px){
+  body{ padding:18px 10px 50px; }
+  .row-head{ grid-template-columns:1fr 1fr; }
+  .row-head .field:nth-child(3){ grid-column:1; }
+  .row-del{ justify-self:end; }
+  .channels{ gap:8px; }
+  .main-btn{ height:62px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>METIN2 RESP TIMER</h1>
+  <p class="sub">Kanały CH1 – CH5 &nbsp;·&nbsp; Lektor PL na minutę przed respem</p>
+  <div class="divider"></div>
+</header>
+
+<div class="toolbar">
+  <button class="btn primary" id="addRow">+ Dodaj timer</button>
+  <button class="btn danger" id="clearAll">Wyczyść wszystko</button>
+
+  <div class="tool-group">
+    <label class="switch"><input type="checkbox" id="voiceOn" checked> Lektor</label>
+    <label class="switch"><input type="checkbox" id="beepOn" checked> Gong</label>
+  </div>
+
+  <div class="tool-group">
+    <span>Głos</span>
+    <select id="voiceSelect"><option>ładowanie…</option></select>
+  </div>
+
+  <div class="tool-group">
+    <span>Ostrzeż</span>
+    <select id="warnAt">
+      <option value="30">30 s przed</option>
+      <option value="60" selected>1 min przed</option>
+      <option value="120">2 min przed</option>
+      <option value="180">3 min przed</option>
+    </select>
+  </div>
+
+  <div class="tool-group">
+    <span>Głośność</span>
+    <input type="range" id="vol" min="0" max="1" step="0.05" value="1">
+  </div>
+
+  <button class="btn" id="testVoice">Test głosu</button>
+</div>
+
+<div id="app"></div>
+
+<footer>
+  Kliknij <b>kanał</b>, aby wystartować odliczanie z wpisanej liczby minut. <kbd>RESET</kbd> czyści pojedynczy kanał.<br>
+  Lektor czyta <b>nazwę + miejsce + kanał</b> na minutę przed końcem oraz w chwili respu. Timery przeżywają odświeżenie strony.<br>
+  Kolory: <b style="color:#ff8b8b">czerwony</b> = odliczanie · <b style="color:#f0b040">pomarańcz</b> = ostrzeżenie · <b style="color:#ffe08a">złoty (pulsuje)</b> = ostatnia minuta · <b style="color:#7de89a">zielony</b> = resp · <b style="color:#7cc4ff">niebieski</b> = UP
+</footer>
+
+<script>
+"use strict";
+
+/* =========================================================
+   USTAWIENIA I STAN
+   ========================================================= */
+
+const LS_KEY   = "metin2-resp-timer-v1";
+const CHANNELS = 5;          // CH1 – CH5
+const UP_AFTER = 300;        // po ilu sekundach od respu pokazać "UP"
+
+const el = (id) => document.getElementById(id);
+
+let state = {
+  rows: [],
+  settings: { voiceOn:true, beepOn:true, warnAt:60, vol:1, voiceURI:"" }
+};
+
+function newRow(name = "", place = "", minutes = "") {
+  return {
+    id: "r" + Math.random().toString(36).slice(2, 9),
+    name, place, minutes,
+    ch: Array.from({ length: CHANNELS }, () => ({ end:0, finishedAt:0, warned:false, ended:false }))
+  };
+}
+
+function save() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data || !Array.isArray(data.rows) || !data.rows.length) return false;
+    state.rows = data.rows.map(r => {
+      const row = newRow(r.name || "", r.place || "", r.minutes || "");
+      row.id = r.id || row.id;
+      if (Array.isArray(r.ch)) {
+        r.ch.forEach((c, i) => {
+          if (i < CHANNELS && c) {
+            row.ch[i] = {
+              end:        Number(c.end) || 0,
+              finishedAt: Number(c.finishedAt) || 0,
+              warned:     !!c.warned,
+              ended:      !!c.ended
+            };
+          }
+        });
+      }
+      return row;
+    });
+    if (data.settings) Object.assign(state.settings, data.settings);
+    return true;
+  } catch (e) { return false; }
+}
+
+/* =========================================================
+   DŹWIĘK — gong generowany w przeglądarce (bez plików zewnętrznych)
+   ========================================================= */
+
+let audioCtx = null;
+
+function ensureAudio() {
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) audioCtx = new AC();
+  }
+  if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+}
+
+function gong(times = 1) {
+  if (!state.settings.beepOn) return;
+  ensureAudio();
+  if (!audioCtx) return;
+
+  for (let n = 0; n < times; n++) {
+    const t0   = audioCtx.currentTime + n * 0.34;
+    const gain = audioCtx.createGain();
+    gain.connect(audioCtx.destination);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.5 * state.settings.vol + 0.0001, t0 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.1);
+
+    // kilka harmonicznych = brzmienie gongu
+    [440, 660, 1320].forEach((f, i) => {
+      const osc = audioCtx.createOscillator();
+      osc.type = i === 0 ? "triangle" : "sine";
+      osc.frequency.setValueAtTime(f, t0);
+      const g2 = audioCtx.createGain();
+      g2.gain.value = 1 / (i + 1.4);
+      osc.connect(g2); g2.connect(gain);
+      osc.start(t0);
+      osc.stop(t0 + 1.2);
+    });
+  }
+}
+
+/* =========================================================
+   LEKTOR (polski syntezator mowy)
+   ========================================================= */
+
+let voices = [];
+
+function polishVoices() {
+  const pl = voices.filter(v => (v.lang || "").toLowerCase().replace("_", "-").startsWith("pl"));
+  return pl.length ? pl : voices;
+}
+
+function refreshVoices() {
+  if (!("speechSynthesis" in window)) return;
+  voices = window.speechSynthesis.getVoices() || [];
+  const sel = el("voiceSelect");
+  const list = polishVoices();
+
+  sel.innerHTML = "";
+  if (!list.length) {
+    sel.innerHTML = "<option value=''>brak głosów w systemie</option>";
+    return;
+  }
+  list.forEach(v => {
+    const o = document.createElement("option");
+    o.value = v.voiceURI;
+    o.textContent = v.name + " (" + v.lang + ")";
+    sel.appendChild(o);
+  });
+
+  const saved = state.settings.voiceURI;
+  if (saved && list.some(v => v.voiceURI === saved)) sel.value = saved;
+  else state.settings.voiceURI = sel.value;
+}
+
+function speak(text) {
+  if (!state.settings.voiceOn) return;
+  if (!("speechSynthesis" in window)) return;
+
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang   = "pl-PL";
+  u.rate   = 1.0;
+  u.pitch  = 1.0;
+  u.volume = state.settings.vol;
+
+  const v = voices.find(x => x.voiceURI === state.settings.voiceURI);
+  if (v) u.voice = v;
+
+  try {
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+/* Buduje komunikat: NAZWA + MIEJSCE + KANAŁ */
+function announcement(row, chIndex, kind) {
+  const parts = [];
+  const name  = (row.name  || "").trim();
+  const place = (row.place || "").trim();
+
+  if (name)  parts.push(name);
+  if (place) parts.push(place);
+  parts.push("kanał " + (chIndex + 1));
+
+  const who = parts.join(", ");
+
+  if (kind === "warn") {
+    const s = state.settings.warnAt;
+    const when = s === 60  ? "Minuta do końca"
+              : s === 30  ? "Trzydzieści sekund do końca"
+              : s === 120 ? "Dwie minuty do końca"
+              :             "Trzy minuty do końca";
+    return "Uwaga. " + who + ". " + when + ".";
+  }
+  return who + ". Czas minął.";
+}
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+
+const app = el("app");
+
+function render() {
+  app.innerHTML = "";
+  state.rows.forEach(row => app.appendChild(buildRow(row)));
+  save();
+}
+
+function buildRow(row) {
+  const wrap = document.createElement("div");
+  wrap.className = "row";
+  wrap.dataset.row = row.id;
+
+  /* --- nagłówek rzędu: nazwa / miejsce / minuty / usuń --- */
+  const head = document.createElement("div");
+  head.className = "row-head";
+
+  const mkField = (tag, placeholder, type, value, onInput) => {
+    const f = document.createElement("div");
+    f.className = "field";
+    const t = document.createElement("span");
+    t.className = "tag";
+    t.textContent = tag;
+    const i = document.createElement("input");
+    i.type = type;
+    i.placeholder = placeholder;
+    i.value = value;
+    if (type === "number") { i.min = "0"; i.step = "0.5"; }
+    i.addEventListener("input", () => { onInput(i.value); save(); });
+    f.appendChild(t); f.appendChild(i);
+    return f;
+  };
+
+  head.appendChild(mkField("Nazwa",  "np. Nefrytowy Generał", "text",   row.name,    v => row.name = v));
+  head.appendChild(mkField("Miejsce","np. Mroczna Świątynia", "text",   row.place,   v => row.place = v));
+  head.appendChild(mkField("Minuty", "czas (min)",            "number", row.minutes, v => row.minutes = v));
+
+  const del = document.createElement("button");
+  del.className = "row-del";
+  del.title = "Usuń ten timer";
+  del.textContent = "✕";
+  del.onclick = () => {
+    state.rows = state.rows.filter(r => r.id !== row.id);
+    if (!state.rows.length) state.rows.push(newRow());
+    render();
+  };
+  head.appendChild(del);
+
+  /* --- kanały CH1–CH5 --- */
+  const channels = document.createElement("div");
+  channels.className = "channels";
+
+  for (let j = 0; j < CHANNELS; j++) {
+    const box = document.createElement("div");
+    box.className = "channel-box";
+
+    const label = document.createElement("div");
+    label.className = "label";
+    label.textContent = "CH " + (j + 1);
+
+    const btn = document.createElement("button");
+    btn.className = "main-btn empty";
+    btn.textContent = "PUSTY";
+    btn.dataset.row = row.id;
+    btn.dataset.ch  = j;
+
+    btn.onclick = () => {
+      ensureAudio();                       // odblokowanie audio pierwszym kliknięciem
+      const minutes = parseFloat(row.minutes);
+      if (!minutes || minutes <= 0) {
+        const inp = head.querySelector('input[type="number"]');
+        inp.focus();
+        inp.style.borderColor = "#b52020";
+        setTimeout(() => inp.style.borderColor = "", 900);
+        return;
+      }
+      row.ch[j] = {
+        end: Date.now() + minutes * 60000,
+        finishedAt: 0,
+        warned: false,
+        ended: false
+      };
+      save();
+      tick();
+    };
+
+    const reset = document.createElement("button");
+    reset.className = "reset-btn";
+    reset.textContent = "RESET";
+    reset.onclick = () => {
+      row.ch[j] = { end:0, finishedAt:0, warned:false, ended:false };
+      save();
+      tick();
+    };
+
+    box.appendChild(label);
+    box.appendChild(btn);
+    box.appendChild(reset);
+    channels.appendChild(box);
+  }
+
+  wrap.appendChild(head);
+  wrap.appendChild(channels);
+  return wrap;
+}
+
+/* =========================================================
+   PĘTLA ODLICZANIA
+   ========================================================= */
+
+function format(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m + ":" + String(s).padStart(2, "0");
+}
+
+function tick() {
+  const now = Date.now();
+  let dirty = false;
+
+  document.querySelectorAll(".main-btn").forEach(btn => {
+    const row = state.rows.find(r => r.id === btn.dataset.row);
+    if (!row) return;
+    const j  = Number(btn.dataset.ch);
+    const c  = row.ch[j];
+
+    if (!c || !c.end) {
+      btn.textContent = "PUSTY";
+      btn.className = "main-btn empty";
+      return;
+    }
+
+    const remaining = Math.ceil((c.end - now) / 1000);
+
+    if (remaining > 0) {
+      /* ostrzeżenie lektora — dokładnie raz */
+      if (!c.warned && remaining <= state.settings.warnAt) {
+        c.warned = true; dirty = true;
+        gong(1);
+        speak(announcement(row, j, "warn"));
+      }
+
+      btn.textContent = format(remaining);
+      btn.className = "main-btn " +
+        (remaining <= 60 ? "critical" : remaining <= 180 ? "alert" : "cooldown");
+      return;
+    }
+
+    /* czas minął */
+    if (!c.ended) {
+      c.ended = true;
+      c.finishedAt = now;
+      c.warned = true;
+      dirty = true;
+      gong(2);
+      speak(announcement(row, j, "end"));
+    }
+    if (!c.finishedAt) { c.finishedAt = c.end; dirty = true; }
+
+    const elapsed = Math.floor((now - c.finishedAt) / 1000);
+    if (elapsed >= UP_AFTER) {
+      btn.textContent = "UP";
+      btn.className = "main-btn up";
+    } else {
+      btn.textContent = "+" + format(elapsed);
+      btn.className = "main-btn ready";
+    }
+  });
+
+  if (dirty) save();
+}
+
+/* =========================================================
+   PASEK STEROWANIA
+   ========================================================= */
+
+function bindToolbar() {
+  el("addRow").onclick = () => { state.rows.push(newRow()); render(); tick(); };
+
+  el("clearAll").onclick = () => {
+    if (!confirm("Wyczyścić wszystkie timery i pola?")) return;
+    state.rows = [newRow(), newRow(), newRow()];
+    render(); tick();
+  };
+
+  const voiceOn = el("voiceOn");
+  voiceOn.checked = state.settings.voiceOn;
+  voiceOn.onchange = () => { state.settings.voiceOn = voiceOn.checked; save(); };
+
+  const beepOn = el("beepOn");
+  beepOn.checked = state.settings.beepOn;
+  beepOn.onchange = () => { state.settings.beepOn = beepOn.checked; save(); };
+
+  const warnAt = el("warnAt");
+  warnAt.value = String(state.settings.warnAt);
+  warnAt.onchange = () => { state.settings.warnAt = Number(warnAt.value); save(); };
+
+  const vol = el("vol");
+  vol.value = state.settings.vol;
+  vol.oninput = () => { state.settings.vol = Number(vol.value); save(); };
+
+  el("voiceSelect").onchange = (e) => { state.settings.voiceURI = e.target.value; save(); };
+
+  el("testVoice").onclick = () => {
+    ensureAudio();
+    gong(1);
+    const r = state.rows[0] || newRow("Nefrytowy Generał", "Mroczna Świątynia");
+    speak(announcement(
+      { name: r.name || "Nefrytowy Generał", place: r.place || "Mroczna Świątynia" },
+      0, "warn"
+    ));
+  };
+}
+
+/* =========================================================
+   START
+   ========================================================= */
+
+if (!load()) {
+  state.rows = [
+    newRow("Nefrytowy Generał", "Mroczna Świątynia", 30),
+    newRow("Razador", "Twierdza Razadora", 60),
+    newRow("Nemere", "Wieża Nemere", 45)
+  ];
+}
+
+bindToolbar();
+render();
+tick();
+setInterval(tick, 250);
+
+if ("speechSynthesis" in window) {
+  refreshVoices();
+  window.speechSynthesis.onvoiceschanged = refreshVoices;
+  setTimeout(refreshVoices, 400);   // Chrome ładuje głosy z opóźnieniem
+}
+
+/* pierwsze kliknięcie/klawisz odblokowuje audio w przeglądarce */
+["click", "keydown", "touchstart"].forEach(evt =>
+  window.addEventListener(evt, ensureAudio, { once: true })
+);
+
+/* ostrzeżenie przed zamknięciem, gdy coś tyka */
+window.addEventListener("beforeunload", (e) => {
+  const running = state.rows.some(r => r.ch.some(c => c.end && c.end > Date.now()));
+  if (running) { e.preventDefault(); e.returnValue = ""; }
+});
+</script>
+
+</body>
+</html>
