@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Metin2 — Resp Timer</title>
-<meta name="description" content="Timery respawnu do Metin2 z polskim lektorem AI (ostrzeżenie na minutę przed końcem).">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%23120d07' stroke='%23d9b45b' stroke-width='4'/%3E%3Cpath d='M32 12v20l14 8' stroke='%23f2d98a' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>LegendsTimer — Metin2 Resp Timer</title>
+<meta name="description" content="Timery respawnu do Metin2 z polskim lektorem AI, ostrzeżenie do 5 minut przed końcem.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='2' width='60' height='60' rx='14' fill='%23120d07' stroke='%23d9b45b' stroke-width='4'/%3E%3Cpath d='M23 13h10v29h18v9H23z' fill='%23f2d98a'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
@@ -49,6 +49,27 @@ body{
 
 /* ---------- nagłówek ---------- */
 header{ text-align:center; margin-bottom:22px; }
+
+.brand{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  flex-wrap:wrap;
+}
+
+.logo{
+  width:clamp(58px, 9vw, 86px);
+  height:clamp(58px, 9vw, 86px);
+  flex:0 0 auto;
+  filter:drop-shadow(0 0 18px rgba(217,180,91,.45)) drop-shadow(0 6px 14px rgba(0,0,0,.9));
+  animation:logoGlow 3.5s ease-in-out infinite;
+}
+
+@keyframes logoGlow{
+  0%,100%{ filter:drop-shadow(0 0 14px rgba(217,180,91,.35)) drop-shadow(0 6px 14px rgba(0,0,0,.9)); }
+  50%    { filter:drop-shadow(0 0 26px rgba(245,226,166,.7))  drop-shadow(0 6px 14px rgba(0,0,0,.9)); }
+}
 
 h1{
   margin:0;
@@ -316,6 +337,7 @@ kbd{
 
 @media (max-width:760px){
   body{ padding:18px 10px 50px; }
+  .brand{ gap:12px; }
   .row-head{ grid-template-columns:1fr 1fr; }
   .row-head .field:nth-child(3){ grid-column:1; }
   .row-del{ justify-self:end; }
@@ -328,8 +350,53 @@ kbd{
 <body>
 
 <header>
-  <h1>METIN2 RESP TIMER</h1>
-  <p class="sub">Kanały CH1 – CH5 &nbsp;·&nbsp; Lektor PL na minutę przed respem</p>
+  <div class="brand">
+    <!-- logo: złota litera L -->
+    <svg class="logo" viewBox="0 0 100 100" role="img" aria-label="Logo LegendsTimer">
+      <defs>
+        <linearGradient id="goldFace" x1="0" y1="0" x2="0.25" y2="1">
+          <stop offset="0%"   stop-color="#fff6d0"/>
+          <stop offset="22%"  stop-color="#f0d071"/>
+          <stop offset="45%"  stop-color="#c9971f"/>
+          <stop offset="58%"  stop-color="#8a6412"/>
+          <stop offset="72%"  stop-color="#e9c65c"/>
+          <stop offset="88%"  stop-color="#fdf0bb"/>
+          <stop offset="100%" stop-color="#a97b16"/>
+        </linearGradient>
+        <linearGradient id="goldRim" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#f7e3a4"/>
+          <stop offset="50%"  stop-color="#b8871f"/>
+          <stop offset="100%" stop-color="#6d4d0d"/>
+        </linearGradient>
+        <radialGradient id="plate" cx="50%" cy="18%" r="90%">
+          <stop offset="0%"   stop-color="#2b1f10"/>
+          <stop offset="70%"  stop-color="#120d07"/>
+          <stop offset="100%" stop-color="#070502"/>
+        </radialGradient>
+      </defs>
+
+      <!-- tarcza -->
+      <rect x="3" y="3" width="94" height="94" rx="20" fill="url(#plate)"
+            stroke="url(#goldRim)" stroke-width="4"/>
+      <rect x="9.5" y="9.5" width="81" height="81" rx="14" fill="none"
+            stroke="rgba(245,226,166,.22)" stroke-width="1.5"/>
+
+      <!-- litera L: cień + lico -->
+      <g>
+        <path d="M34 19h15.5v43H73v19H34z" fill="#3a2a08" transform="translate(2.5,3)"/>
+        <path d="M34 19h15.5v43H73v19H34z" fill="url(#goldFace)"
+              stroke="url(#goldRim)" stroke-width="2.4" stroke-linejoin="round"/>
+        <!-- refleks światła -->
+        <path d="M34 19h15.5v10H34z" fill="rgba(255,255,255,.42)"/>
+        <path d="M56 72h17v9H56z" fill="rgba(255,255,255,.18)"/>
+      </g>
+    </svg>
+
+    <div>
+      <h1>LEGENDS TIMER</h1>
+      <p class="sub">Metin2 &nbsp;·&nbsp; CH1 – CH5 &nbsp;·&nbsp; Lektor PL</p>
+    </div>
+  </div>
   <div class="divider"></div>
 </header>
 
@@ -351,9 +418,11 @@ kbd{
     <span>Ostrzeż</span>
     <select id="warnAt">
       <option value="30">30 s przed</option>
-      <option value="60" selected>1 min przed</option>
+      <option value="60">1 min przed</option>
       <option value="120">2 min przed</option>
       <option value="180">3 min przed</option>
+      <option value="240">4 min przed</option>
+      <option value="300" selected>5 min przed</option>
     </select>
   </div>
 
@@ -369,7 +438,7 @@ kbd{
 
 <footer>
   Kliknij <b>kanał</b>, aby wystartować odliczanie z wpisanej liczby minut. <kbd>RESET</kbd> czyści pojedynczy kanał.<br>
-  Lektor czyta <b>nazwę + miejsce + kanał</b> na minutę przed końcem oraz w chwili respu. Timery przeżywają odświeżenie strony.<br>
+  Lektor czyta <b>nazwę + miejsce + kanał</b> z wybranym wyprzedzeniem (<b>do 5 minut</b>) oraz w chwili respu. Timery przeżywają odświeżenie strony.<br>
   Kolory: <b style="color:#ff8b8b">czerwony</b> = odliczanie · <b style="color:#f0b040">pomarańcz</b> = ostrzeżenie · <b style="color:#ffe08a">złoty (pulsuje)</b> = ostatnia minuta · <b style="color:#7de89a">zielony</b> = resp · <b style="color:#7cc4ff">niebieski</b> = UP
 </footer>
 
@@ -384,11 +453,21 @@ const LS_KEY   = "metin2-resp-timer-v1";
 const CHANNELS = 5;          // CH1 – CH5
 const UP_AFTER = 300;        // po ilu sekundach od respu pokazać "UP"
 
+/* treść ostrzeżenia lektora dla każdego dostępnego wyprzedzenia */
+const WARN_TEXT = {
+  30:  "Trzydzieści sekund do końca",
+  60:  "Minuta do końca",
+  120: "Dwie minuty do końca",
+  180: "Trzy minuty do końca",
+  240: "Cztery minuty do końca",
+  300: "Pięć minut do końca"
+};
+
 const el = (id) => document.getElementById(id);
 
 let state = {
   rows: [],
-  settings: { voiceOn:true, beepOn:true, warnAt:60, vol:1, voiceURI:"" }
+  settings: { voiceOn:true, beepOn:true, warnAt:300, vol:1, voiceURI:"", warnV2:true }
 };
 
 function newRow(name = "", place = "", minutes = "") {
@@ -427,6 +506,13 @@ function load() {
       return row;
     });
     if (data.settings) Object.assign(state.settings, data.settings);
+
+    /* jednorazowa migracja: nowy domyślny zapas to 5 minut */
+    if (!state.settings.warnV2) {
+      state.settings.warnAt = 300;
+      state.settings.warnV2 = true;
+    }
+    if (!WARN_TEXT[state.settings.warnAt]) state.settings.warnAt = 300;
     return true;
   } catch (e) { return false; }
 }
@@ -538,12 +624,7 @@ function announcement(row, chIndex, kind) {
   const who = parts.join(", ");
 
   if (kind === "warn") {
-    const s = state.settings.warnAt;
-    const when = s === 60  ? "Minuta do końca"
-              : s === 30  ? "Trzydzieści sekund do końca"
-              : s === 120 ? "Dwie minuty do końca"
-              :             "Trzy minuty do końca";
-    return "Uwaga. " + who + ". " + when + ".";
+    return "Uwaga. " + who + ". " + WARN_TEXT[state.settings.warnAt] + ".";
   }
   return who + ". Czas minął.";
 }
@@ -694,9 +775,12 @@ function tick() {
         speak(announcement(row, j, "warn"));
       }
 
+      /* pomarańcz zapala się dokładnie wtedy, gdy odzywa się lektor */
+      const alertAt = Math.max(180, state.settings.warnAt);
+
       btn.textContent = format(remaining);
       btn.className = "main-btn " +
-        (remaining <= 60 ? "critical" : remaining <= 180 ? "alert" : "cooldown");
+        (remaining <= 60 ? "critical" : remaining <= alertAt ? "alert" : "cooldown");
       return;
     }
 

@@ -1,14 +1,16 @@
-# Metin2 — Resp Timer
+# LegendsTimer — Metin2 Resp Timer
 
 Timery respawnu do Metin2 z podziałem na kanały **CH1–CH5** i **polskim lektorem AI**,
-który na minutę przed końcem czyta **nazwę + miejsce + kanał**.
+który z wyprzedzeniem do **5 minut** czyta **nazwę + miejsce + kanał**.
+
+🔗 **https://kayaitchem.github.io/LegendsTimer/**
 
 ## Funkcje
 
 - **Nieograniczona liczba timerów** — przycisk „+ Dodaj timer", każdy z własnym kompletem CH1–CH5
 - **Pola tekstowe** — `Nazwa` (np. boss) i `Miejsce` (np. mapa/lokacja) dla każdego timera
 - **Lektor PL** — Web Speech API, wybór głosu systemowego (np. *Microsoft Paulina*, *Microsoft Adam*)
-- **Ostrzeżenie** — konfigurowalne: 30 s / 1 min / 2 min / 3 min przed końcem
+- **Ostrzeżenie** — konfigurowalne: 30 s / 1 / 2 / 3 / 4 / **5 min** przed końcem (domyślnie 5 min)
 - **Gong** — generowany w przeglądarce (bez plików zewnętrznych), 1× przy ostrzeżeniu, 2× przy respie
 - **Zapis stanu** — timery i wpisane teksty przeżywają odświeżenie strony (`localStorage`)
 - **Motyw Metin2** — złoto, krew, ciemne drewno, font Cinzel
@@ -18,8 +20,8 @@ który na minutę przed końcem czyta **nazwę + miejsce + kanał**.
 | Kolor | Znaczenie |
 |---|---|
 | szary `PUSTY` | kanał nieustawiony |
-| czerwony | odliczanie, powyżej 3 min |
-| pomarańczowy | poniżej 3 min |
+| czerwony | odliczanie, przed progiem ostrzeżenia |
+| pomarańczowy | ostrzeżenie — zapala się razem z lektorem |
 | złoty (pulsuje) | ostatnia minuta |
 | zielony `+0:00` | resp — liczy czas od końca |
 | niebieski `UP` | 5 min po respie |
