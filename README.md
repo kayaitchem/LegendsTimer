@@ -13,6 +13,8 @@ który z wyprzedzeniem do **5 minut** czyta **nazwę + miejsce + kanał**.
 - **Ostrzeżenie** — konfigurowalne: 30 s / 1 / 2 / 3 / 4 / **5 min** przed końcem (domyślnie 5 min)
 - **Gong** — generowany w przeglądarce (bez plików zewnętrznych), 1× przy ostrzeżeniu, 2× przy respie
 - **Wspólne timery na żywo** — cała ekipa widzi to samo, zmiany lecą poniżej sekundy (opcjonalne, patrz niżej)
+- **Czat pokoju** — zadokowany w prawym dolnym rogu, z licznikiem nieprzeczytanych
+- **Ksywki** — każdy ustawia swoją, widać kto jest online i kto pisze
 - **Pokoje** — `#nazwa-pokoju` w adresie, każda ekipa ma swoje timery
 - **Zapis stanu** — timery i wpisane teksty przeżywają odświeżenie strony (`localStorage`)
 - **Motyw Metin2** — złoto, krew, ciemne drewno, font Cinzel
@@ -60,6 +62,20 @@ Domyślnie strona działa **lokalnie** — timery widzi tylko właściciel przeg
 Po wgraniu pliku plakietka w lewym górnym rogu paska zmieni się z *Tryb lokalny*
 na **Na żywo · nazwa-pokoju · N osób**.
 
+### Czat i ksywki
+
+W pasku u góry jest pole **Ksywka** — zapisuje się lokalnie, a przy pierwszym wejściu
+losuje się automatycznie (`Gracz123`). Ksywka trafia do listy online i do wiadomości.
+
+Czat siedzi w prawym dolnym rogu. Zwinięty pokazuje **czerwony licznik nieprzeczytanych**,
+po rozwinięciu widać listę osób online i ostatnie 120 wiadomości. Enter wysyła.
+
+Treść wiadomości wstawiana jest przez `textContent`, więc kod HTML wpisany przez
+kogokolwiek wyświetli się jako zwykły tekst i nie wykona się.
+
+Czat i timery żyją w tym samym pokoju — osobny pokój to osobny czat.
+Historię można wyczyścić w konsoli Firebase (*Realtime Database* → `rooms/nazwa/chat` → usuń).
+
 ### Pokoje
 
 Adres `.../LegendsTimer/#gildia-xyz` to osobny, niezależny zestaw timerów.
@@ -89,8 +105,9 @@ dlatego warto wybrać nazwę, której nikt nie zgadnie.
 |---|---|
 | nazwa, miejsce, minuty | wybrany głos lektora |
 | momenty zakończenia kanałów | głośność, wyprzedzenie ostrzeżenia |
-| | włącznik lektora i gongu |
-| | wyciszenie pojedynczych timerów |
+| wiadomości czatu | włącznik lektora i gongu |
+| ksywki osób online | wyciszenie pojedynczych timerów |
+| | własna ksywka |
 
 Lektor odzywa się **u każdego osobno** — nie tylko u osoby, która ustawiła timer.
 Czas liczony jest zegarem serwera, więc przestawiony zegar w czyimś komputerze
