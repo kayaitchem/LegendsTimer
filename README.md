@@ -40,13 +40,28 @@ który z wyprzedzeniem do **5 minut** czyta **nazwę + miejsce + kanał**.
    i jest widoczny (przygaszony), po prostu milczy. Reszta ekipy słyszy go normalnie.
 4. Przycisk **Test głosu** sprawdza, czy lektor działa.
 
-## Wymagania lektora
+## Lektor — jak uzyskać ładny głos
 
-Lektor korzysta z głosów zainstalowanych w systemie. Jeśli lista „Głos" jest pusta:
+Strona nie zawiera własnych nagrań. Prosi przeglądarkę o przeczytanie tekstu,
+więc jakość zależy od tego, jakie głosy udostępnia przeglądarka.
 
-- **Windows** → Ustawienia → Czas i język → Mowa → Dodaj głosy → *Polski*
-- Najlepiej działa w **Chrome / Edge**. Firefox ma słabsze wsparcie Web Speech API.
-- Dźwięk włącza się po pierwszym kliknięciu na stronie (wymóg przeglądarek).
+| Przeglądarka | Co dostajesz |
+|---|---|
+| **Edge** | *Zofia Online (Natural)*, *Marek Online (Natural)* — **głosy neuronowe**, brzmią naturalnie, za darmo |
+| Chrome | *Paulina*, *Adam* — stare syntezatory SAPI z Windowsa, wyraźnie bardziej robotyczne |
+| Firefox | słabe wsparcie Web Speech API |
+
+**Otwórz stronę w Edge, jeśli zależy Ci na dobrym głosie.** Aplikacja sama
+posortuje listę, oznaczy głosy neuronowe gwiazdką **★** i wybierze najlepszy dostępny.
+Gdy widzisz przy liście znak **?**, znaczy że masz tylko stare głosy — najedź na niego myszką.
+
+Suwak **Tempo** reguluje szybkość czytania (0,7×–1,3×).
+
+Głosy neuronowe wymagają internetu — są syntezowane po stronie Microsoftu.
+
+Jeśli lista „Głos" jest zupełnie pusta: **Windows** → Ustawienia → Czas i język →
+Mowa → Dodaj głosy → *Polski*. Dźwięk włącza się po pierwszym kliknięciu na stronie
+(wymóg przeglądarek).
 
 ## Wspólne timery dla całej ekipy
 
