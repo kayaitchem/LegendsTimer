@@ -13,6 +13,7 @@ który z wyprzedzeniem do **5 minut** czyta **nazwę + miejsce + kanał**.
 - **Ostrzeżenie** — konfigurowalne: 30 s / 1 / 2 / 3 / 4 / **5 min** przed końcem (domyślnie 5 min)
 - **Gong** — generowany w przeglądarce (bez plików zewnętrznych), 1× przy ostrzeżeniu, 2× przy respie
 - **Wspólne timery na żywo** — cała ekipa widzi to samo, zmiany lecą poniżej sekundy (opcjonalne, patrz niżej)
+- **Podpis przy kanale** — nad każdym CH widać ksywkę osoby, która go odpaliła
 - **Czat pokoju** — zadokowany w prawym dolnym rogu, z licznikiem nieprzeczytanych
 - **Ksywki** — każdy ustawia swoją, widać kto jest online i kto pisze
 - **Pokoje** — `#nazwa-pokoju` w adresie, każda ekipa ma swoje timery
@@ -107,7 +108,7 @@ dlatego warto wybrać nazwę, której nikt nie zgadnie.
 | momenty zakończenia kanałów | głośność, wyprzedzenie ostrzeżenia |
 | wiadomości czatu | włącznik lektora i gongu |
 | ksywki osób online | wyciszenie pojedynczych timerów |
-| | własna ksywka |
+| kto odpalił dany kanał | własna ksywka |
 
 Lektor odzywa się **u każdego osobno** — nie tylko u osoby, która ustawiła timer.
 Czas liczony jest zegarem serwera, więc przestawiony zegar w czyimś komputerze

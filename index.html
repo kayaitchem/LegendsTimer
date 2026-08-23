@@ -315,6 +315,21 @@ input[type="range"]{ accent-color:var(--gold); width:110px; }
   border:1px solid rgba(217,180,91,.22);
 }
 
+/* ksywka osoby, która odpaliła kanał */
+.by{
+  min-height:14px;
+  margin:0 0 4px;
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.04em;
+  text-align:center;
+  color:var(--muted);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  text-shadow:0 1px 3px rgba(0,0,0,.9);
+}
+
 .main-btn{
   height:74px;
   width:100%;
@@ -687,7 +702,7 @@ function newRow(name = "", place = "", minutes = "") {
   return {
     id: "r" + Math.random().toString(36).slice(2, 9),
     name, place, minutes,
-    ch: Array.from({ length: CHANNELS }, () => ({ end:0, finishedAt:0, warned:false, ended:false }))
+    ch: Array.from({ length: CHANNELS }, () => ({ end:0, finishedAt:0, warned:false, ended:false, by:"" }))
   };
 }
 
@@ -721,7 +736,8 @@ function load() {
               end:        Number(c.end) || 0,
               finishedAt: Number(c.finishedAt) || 0,
               warned:     !!c.warned,
-              ended:      !!c.ended
+              ended:      !!c.ended,
+              by:         cleanNick(c.by)
             };
           }
         });
@@ -763,7 +779,7 @@ function rowsPayload() {
     name:    r.name  || "",
     place:   r.place || "",
     minutes: String(r.minutes === 0 || r.minutes ? r.minutes : ""),
-    ch:      r.ch.map(c => ({ end: c.end || 0, finishedAt: c.finishedAt || 0 }))
+    ch:      r.ch.map(c => ({ end: c.end || 0, finishedAt: c.finishedAt || 0, by: c.by || "" }))
   }));
 }
 
@@ -802,7 +818,7 @@ function applyRemote(raw) {
     const ch = Array.isArray(r.ch) ? r.ch : (r.ch ? Object.values(r.ch) : []);
     for (let j = 0; j < CHANNELS; j++) {
       const inc = ch[j] || {};
-      const cur = row.ch[j] || { end:0, finishedAt:0, warned:false, ended:false };
+      const cur = row.ch[j] || { end:0, finishedAt:0, warned:false, ended:false, by:"" };
       const end = Number(inc.end) || 0;
 
       if (end !== cur.end) {
@@ -814,6 +830,7 @@ function applyRemote(raw) {
       }
       cur.end        = end;
       cur.finishedAt = Number(inc.finishedAt) || 0;
+      cur.by         = cleanNick(inc.by);
       if (!end) { cur.warned = false; cur.ended = false; }
       row.ch[j] = cur;
     }
@@ -1230,7 +1247,8 @@ function buildRow(row) {
         end: now() + minutes * 60000,
         finishedAt: 0,
         warned: false,
-        ended: false
+        ended: false,
+        by: myNick()          // kto odpalił ten kanał
       };
       save();
       tick();
@@ -1240,12 +1258,18 @@ function buildRow(row) {
     reset.className = "reset-btn";
     reset.textContent = "RESET";
     reset.onclick = () => {
-      row.ch[j] = { end:0, finishedAt:0, warned:false, ended:false };
+      row.ch[j] = { end:0, finishedAt:0, warned:false, ended:false, by:"" };
       save();
       tick();
     };
 
+    /* ksywka osoby, która odpaliła ten kanał */
+    const by = document.createElement("div");
+    by.className = "by";
+    btn._byEl = by;
+
     box.appendChild(label);
+    box.appendChild(by);
     box.appendChild(btn);
     box.appendChild(reset);
     channels.appendChild(box);
@@ -1281,6 +1305,16 @@ function tick() {
     if (!row) return;
     const j  = Number(btn.dataset.ch);
     const c  = row.ch[j];
+
+    /* podpis: kto odpalił ten kanał (pusty kanał = brak podpisu) */
+    const byEl = btn._byEl;
+    if (byEl) {
+      const nick = (c && c.end) ? (c.by || "") : "";
+      if (byEl.textContent !== nick) {
+        byEl.textContent = nick;
+        byEl.style.color = nick ? nickColor(nick) : "";
+      }
+    }
 
     if (!c || !c.end) {
       btn.textContent = "PUSTY";
