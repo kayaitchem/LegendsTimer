@@ -129,6 +129,72 @@ Lektor odzywa się **u każdego osobno** — nie tylko u osoby, która ustawiła
 Czas liczony jest zegarem serwera, więc przestawiony zegar w czyimś komputerze
 niczego nie psuje.
 
+## Wspólne timery dla całej ekipy
+
+Domyślnie strona działa **lokalnie** — timery widzi tylko właściciel przeglądarki.
+Żeby włączyć wspólne timery w czasie rzeczywistym, wystarczy darmowa baza
+**Firebase Realtime Database** (plan Spark, bez karty).
+
+1. Załóż projekt na https://console.firebase.google.com → **Realtime Database** → *Create Database*
+   → lokalizacja **europe-west1** → tryb **testowy**.
+2. *Project settings* → *Your apps* → **Web** → skopiuj obiekt `firebaseConfig`.
+3. Wklej `apiKey`, `authDomain`, `databaseURL` i `projectId` do bloku
+   `window.FIREBASE_CONFIG` na górze `index.html`.
+
+Po wgraniu pliku plakietka w lewym górnym rogu paska zmieni się z *Tryb lokalny*
+na **Na żywo · nazwa-pokoju · N osób**.
+
+### Czat i ksywki
+
+W pasku u góry jest pole **Ksywka** — zapisuje się lokalnie, a przy pierwszym wejściu
+losuje się automatycznie (`Gracz123`). Ksywka trafia do listy online i do wiadomości.
+
+Czat siedzi w prawym dolnym rogu. Zwinięty pokazuje **czerwony licznik nieprzeczytanych**,
+po rozwinięciu widać listę osób online i ostatnie 120 wiadomości. Enter wysyła.
+
+Treść wiadomości wstawiana jest przez `textContent`, więc kod HTML wpisany przez
+kogokolwiek wyświetli się jako zwykły tekst i nie wykona się.
+
+Czat i timery żyją w tym samym pokoju — osobny pokój to osobny czat.
+Historię można wyczyścić w konsoli Firebase (*Realtime Database* → `rooms/nazwa/chat` → usuń).
+
+### Pokoje
+
+Adres `.../LegendsTimer/#gildia-xyz` to osobny, niezależny zestaw timerów.
+Przycisk **Kopiuj link dla ekipy** kopiuje adres z aktualnym pokojem.
+
+### Reguły bazy
+
+Tryb testowy wygasa po 30 dniach. Trwałe reguły dla tej aplikacji
+(*Realtime Database* → *Rules*):
+
+```json
+{
+  "rules": {
+    "rooms": {
+      "$room": { ".read": true, ".write": true }
+    }
+  }
+}
+```
+
+Każdy, kto zna nazwę pokoju, może odczytywać i zmieniać jego timery —
+dlatego warto wybrać nazwę, której nikt nie zgadnie.
+
+### Co jest wspólne, a co prywatne
+
+| Wspólne (chmura) | Prywatne (Twoja przeglądarka) |
+|---|---|
+| nazwa, miejsce, minuty | wybrany głos lektora |
+| momenty zakończenia kanałów | głośność, wyprzedzenie ostrzeżenia |
+| wiadomości czatu | włącznik lektora i gongu |
+| ksywki osób online | wyciszenie pojedynczych timerów |
+| kto odpalił dany kanał | własna ksywka |
+
+Lektor odzywa się **u każdego osobno** — nie tylko u osoby, która ustawiła timer.
+Czas liczony jest zegarem serwera, więc przestawiony zegar w czyimś komputerze
+niczego nie psuje.
+
 ## Uruchomienie lokalne
 
 Otwórz `index.html` w przeglądarce — to jeden samodzielny plik, bez zależności i bez budowania.
