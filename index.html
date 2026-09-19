@@ -773,10 +773,6 @@ kbd{
 <div class="roombar">
   <span class="status" id="syncStatus"><i></i><span id="syncText">Tryb lokalny</span></span>
 
-  <div class="tool-group">
-    <span>Ksywka</span>
-    <input type="text" id="nickInput" placeholder="Twoja ksywka" maxlength="20" style="width:150px">
-  </div>
 
   <div class="tool-group">
     <span>Pokój</span>
@@ -1153,10 +1149,8 @@ function cleanNick(s) {
 }
 
 function myNick() {
-  if (!state.settings.nick) {
-    state.settings.nick = "Gracz" + Math.floor(100 + Math.random() * 900);
-  }
-  return state.settings.nick;
+  const auth = getAuth();
+  return auth && auth.nick ? auth.nick : "Gość";
 }
 
 /* stały kolor ksywki, żeby dało się rozróżniać ludzi w czacie */
@@ -1657,20 +1651,7 @@ function bindToolbar() {
     refreshVoices();          // odśwież podpowiedź przy wyborze
   };
 
-  /* --- ksywka --- */
-  const nickInput = el("nickInput");
-  nickInput.value = myNick();
-  nickInput.addEventListener("input", () => {
-    const v = cleanNick(nickInput.value);
-    state.settings.nick = v;
-    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
-    if (v && cloud.announceNick) cloud.announceNick(v);
-    renderChat();
-  });
-  nickInput.addEventListener("blur", () => {
-    nickInput.value = myNick();          // pusta ksywka wraca do wylosowanej
-    if (cloud.announceNick) cloud.announceNick(state.settings.nick);
-  });
+  /* ksywka pochodzi z logowania, nie z input field */
 
   /* --- czat --- */
   el("chatHead").onclick = () => {
@@ -1861,6 +1842,12 @@ function initAuth() {
 
     hideLoginModal();
     if (adminMode) showAdminPanel();
+
+    // ogłoś nick do Firebase
+    if (cloud.announceNick) {
+      setTimeout(() => cloud.announceNick(auth.nick), 500);
+    }
+
     initUI();  // restartuj interfejs
   };
 
