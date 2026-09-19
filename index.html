@@ -65,6 +65,178 @@ body{
   min-height:100%;
 }
 
+/* ---------- login modal ---------- */
+#loginModal{
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,.95);
+  display:flex; align-items:center; justify-content:center;
+  z-index:9999;
+}
+
+#loginModal.hidden{ display:none; }
+
+.login-box{
+  background:var(--panel-2);
+  border:2px solid var(--gold);
+  border-radius:12px;
+  padding:40px;
+  width:100%; max-width:380px;
+  text-align:center;
+  box-shadow:0 0 40px rgba(217,180,91,.3), 0 20px 60px rgba(0,0,0,.8);
+}
+
+.login-box h2{
+  margin:0 0 30px;
+  font-family:'Cinzel', Georgia, serif;
+  font-size:28px;
+  color:var(--gold-2);
+  letter-spacing:.1em;
+}
+
+.login-box input{
+  display:block;
+  width:100%;
+  margin:0 0 16px;
+  padding:12px 14px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:6px;
+  color:var(--parch);
+  font-family:inherit;
+  font-size:14px;
+}
+
+.login-box input:focus{
+  outline:none;
+  border-color:var(--gold);
+  box-shadow:0 0 12px rgba(217,180,91,.3);
+}
+
+.login-box input::placeholder{ color:var(--muted); }
+
+.login-box button{
+  display:block;
+  width:100%;
+  padding:12px;
+  margin-top:12px;
+  background:var(--gold);
+  color:var(--ink);
+  border:none;
+  border-radius:6px;
+  font-weight:600;
+  cursor:pointer;
+  transition:background .2s;
+}
+
+.login-box button:hover{ background:var(--gold-2); }
+
+.login-error{
+  margin-top:12px;
+  color:var(--blood-2);
+  font-size:13px;
+}
+
+.login-admin-toggle{
+  margin-top:20px;
+  padding-top:20px;
+  border-top:1px solid var(--line);
+}
+
+.login-admin-toggle label{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  color:var(--muted);
+  font-size:13px;
+  cursor:pointer;
+}
+
+.login-admin-toggle input[type="checkbox"]{
+  cursor:pointer;
+}
+
+/* ---------- panel admina ---------- */
+#adminPanel{
+  position:fixed;
+  top:50px; right:50px;
+  width:350px;
+  background:var(--panel-2);
+  border:2px solid var(--blood-2);
+  border-radius:8px;
+  padding:20px;
+  max-height:600px;
+  overflow-y:auto;
+  z-index:9000;
+  box-shadow:0 10px 40px rgba(181,32,32,.3);
+}
+
+#adminPanel.hidden{ display:none; }
+
+#adminPanel h3{
+  margin:0 0 16px;
+  font-family:'Cinzel', Georgia, serif;
+  color:var(--blood-2);
+  font-size:16px;
+  letter-spacing:.1em;
+}
+
+.admin-user{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px;
+  margin:6px 0;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:6px;
+  font-size:13px;
+}
+
+.admin-user-nick{
+  font-weight:600;
+  color:var(--gold-2);
+}
+
+.admin-user-time{
+  color:var(--muted);
+  font-size:12px;
+  margin:2px 0;
+}
+
+.admin-kick-btn{
+  padding:6px 12px;
+  background:var(--blood);
+  color:var(--parch);
+  border:none;
+  border-radius:4px;
+  font-size:12px;
+  cursor:pointer;
+  transition:background .2s;
+}
+
+.admin-kick-btn:hover{ background:var(--blood-2); }
+
+.admin-logout{
+  margin-top:16px;
+  padding-top:16px;
+  border-top:1px solid var(--line);
+}
+
+.admin-logout-btn{
+  width:100%;
+  padding:8px;
+  background:var(--muted);
+  color:var(--ink);
+  border:none;
+  border-radius:4px;
+  cursor:pointer;
+  font-weight:600;
+  transition:background .2s;
+}
+
+.admin-logout-btn:hover{ background:var(--parch); }
+
 /* ---------- nagłówek ---------- */
 header{ text-align:center; margin-bottom:22px; }
 
@@ -521,6 +693,32 @@ kbd{
 
 <body>
 
+<!-- ========== LOGIN MODAL ========== -->
+<div id="loginModal">
+  <div class="login-box">
+    <h2>LegendsTimer</h2>
+    <input type="text" id="loginNick" placeholder="Twoja ksywka (nick z gry)">
+    <input type="password" id="loginPass" placeholder="Hasło">
+    <button id="loginBtn">Zaloguj</button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-admin-toggle">
+      <label>
+        <input type="checkbox" id="adminModeToggle">
+        Logowanie admina
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PANEL ADMINA ========== -->
+<div id="adminPanel" class="hidden">
+  <h3>👑 Panel Admina</h3>
+  <div id="adminUsersList"></div>
+  <div class="admin-logout">
+    <button class="admin-logout-btn" id="adminLogoutBtn">Wyloguj</button>
+  </div>
+</div>
+
 <header>
   <div class="brand">
     <!-- logo: złota litera L -->
@@ -882,13 +1080,20 @@ const cloud = {
   },
 
   /* obecność: {cid: {n: ksywka}} */
+  onlinePeers: [],
   setPeers(map) {
-    const list = map && typeof map === "object" ? Object.values(map) : [];
-    cloud.peers = list.length || 1;
-    const nicks = list.map(p => cleanNick(p && p.n)).filter(Boolean);
+    const list = map && typeof map === "object" ? Object.entries(map) : [];
+    cloud.onlinePeers = list.filter(([_, p]) => p && p.n).map(([cid, p]) => ({
+      cid: cid,
+      nick: cleanNick(p.n),
+      loginTime: Date.now()
+    }));
+    cloud.peers = cloud.onlinePeers.length || 1;
+    const nicks = cloud.onlinePeers.map(p => p.nick);
     const box = el("chatOnline");
     if (box) box.textContent = nicks.length ? "Online: " + nicks.join(", ") : "—";
     cloud.status(cloud.state || "online");
+    updateAdminPanel();
   },
 
   /* czat: {klucz: {n, t, s}} */
@@ -1517,23 +1722,187 @@ function bindToolbar() {
 }
 
 /* =========================================================
+   AUTENTYKACJA
+   ========================================================= */
+
+const AUTH_USER_PASS = "metin2";        // hasło dla zwykłych użytkowników
+const AUTH_ADMIN_PASS = "admin123";     // hasło dla admina
+const AUTH_LS_KEY = "legendstimer_auth";
+
+function getAuth() {
+  try {
+    const s = localStorage.getItem(AUTH_LS_KEY);
+    return s ? JSON.parse(s) : null;
+  } catch { return null; }
+}
+
+function setAuth(auth) {
+  try {
+    localStorage.setItem(AUTH_LS_KEY, JSON.stringify(auth));
+  } catch {}
+}
+
+function logout() {
+  localStorage.removeItem(AUTH_LS_KEY);
+  location.reload();
+}
+
+function showLoginModal() {
+  document.getElementById("loginModal").classList.remove("hidden");
+}
+
+function hideLoginModal() {
+  document.getElementById("loginModal").classList.add("hidden");
+}
+
+function showAdminPanel() {
+  document.getElementById("adminPanel").classList.remove("hidden");
+}
+
+function hideAdminPanel() {
+  document.getElementById("adminPanel").classList.add("hidden");
+}
+
+function updateAdminPanel() {
+  const auth = getAuth();
+  if (!auth || !auth.adminMode) return;
+
+  const list = document.getElementById("adminUsersList");
+  if (!list) return;
+
+  // sprawdzenie czy Firebase jest skonfigurowany
+  const hasFirebase = window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.databaseURL;
+
+  if (!hasFirebase) {
+    list.innerHTML = "<div style='color:var(--blood-2);font-size:13px;'>⚠️ Firebase nie jest skonfigurowany. Bez Firebase widoczność online nie będzie działać.</div>";
+    return;
+  }
+
+  const peers = cloud.onlinePeers || [];
+
+  if (peers.length === 0) {
+    list.innerHTML = "<div style='color:var(--muted);font-size:13px;'>Nikt online</div>";
+    return;
+  }
+
+  list.innerHTML = peers.map(p => `
+    <div class="admin-user">
+      <div>
+        <div class="admin-user-nick">${p.nick}</div>
+        <div class="admin-user-time">SessionID: ${p.cid.slice(0, 8)}</div>
+      </div>
+      <button class="admin-kick-btn" onclick="adminKickUser('${p.nick}')">Wyrzuć</button>
+    </div>
+  `).join("");
+}
+
+function adminKickUser(nick) {
+  const auth = getAuth();
+  if (!auth || !auth.adminMode) {
+    alert("Brak uprawnień");
+    return;
+  }
+
+  if (!confirm(`Wyrzucić ${nick}?`)) return;
+
+  // dodaj nick do banned listy
+  if (cloud.setBanned) {
+    cloud.setBanned(nick, true);
+  } else {
+    alert("Firebase nie jest skonfigurowany");
+  }
+}
+
+function initAuth() {
+  const auth = getAuth();
+
+  // jeśli zalogowany — schowaj login modal
+  if (auth && auth.nick) {
+    hideLoginModal();
+    if (auth.adminMode) showAdminPanel();
+    return true;
+  }
+
+  // pokazuj login modal
+  showLoginModal();
+
+  const nickInput = document.getElementById("loginNick");
+  const passInput = document.getElementById("loginPass");
+  const loginBtn = document.getElementById("loginBtn");
+  const errorDiv = document.getElementById("loginError");
+  const adminToggle = document.getElementById("adminModeToggle");
+
+  loginBtn.onclick = () => {
+    const nick = nickInput.value.trim();
+    const pass = passInput.value;
+    const adminMode = adminToggle.checked;
+
+    errorDiv.textContent = "";
+
+    if (!nick) {
+      errorDiv.textContent = "Wpisz ksywkę";
+      return;
+    }
+
+    // sprawdzenie hasła
+    const expectedPass = adminMode ? AUTH_ADMIN_PASS : AUTH_USER_PASS;
+    if (pass !== expectedPass) {
+      errorDiv.textContent = "Błędne hasło";
+      return;
+    }
+
+    // zapis sesji
+    const auth = {
+      nick: nick,
+      adminMode: adminMode,
+      loginTime: Date.now()
+    };
+    setAuth(auth);
+
+    hideLoginModal();
+    if (adminMode) showAdminPanel();
+    initUI();  // restartuj interfejs
+  };
+
+  passInput.addEventListener("keydown", e => {
+    if (e.key === "Enter") loginBtn.click();
+  });
+
+  // admin logout button
+  const adminLogoutBtn = document.getElementById("adminLogoutBtn");
+  if (adminLogoutBtn) {
+    adminLogoutBtn.onclick = logout;
+  }
+
+  return false;
+}
+
+/* =========================================================
    START
    ========================================================= */
 
-if (!load()) {
-  state.rows = [
-    newRow("Nefrytowy Generał", "Mroczna Świątynia", 30),
-    newRow("Razador", "Twierdza Razadora", 60),
-    newRow("Nemere", "Wieża Nemere", 45)
-  ];
+function initUI() {
+  if (!load()) {
+    state.rows = [
+      newRow("Nefrytowy Generał", "Mroczna Świątynia", 30),
+      newRow("Razador", "Twierdza Razadora", 60),
+      newRow("Nemere", "Wieża Nemere", 45)
+    ];
+  }
+
+  bindToolbar();
+  cloud.status(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.databaseURL ? "connecting" : "local");
+  render();
+  renderChat();
+  tick();
+  setInterval(tick, 250);
 }
 
-bindToolbar();
-cloud.status(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.databaseURL ? "connecting" : "local");
-render();
-renderChat();
-tick();
-setInterval(tick, 250);
+// inicjuj auth
+const isLoggedIn = initAuth();
+if (isLoggedIn) {
+  initUI();
+}
 
 if ("speechSynthesis" in window) {
   refreshVoices();
@@ -1578,6 +1947,7 @@ if (!cfg.databaseURL) {
     const meRef   = ref(db, base + "/presence/" + cloud.cid);
     const allRef  = ref(db, base + "/presence");
     const chatRef = ref(db, base + "/chat");
+    const bannedRef = ref(db, base + "/banned");
 
     /* różnica między zegarem serwera a zegarem tego komputera */
     onValue(ref(db, ".info/serverTimeOffset"), s => cloud.setOffset(Number(s.val()) || 0));
@@ -1608,6 +1978,26 @@ if (!cfg.databaseURL) {
 
     cloud.sendChat = (msg) =>
       push(chatRef, msg).catch(err => cloud.status("error", err.message));
+
+    /* admin ban/unban */
+    cloud.setBanned = (nick, banned) => {
+      const bannedNickRef = ref(db, base + "/banned/" + nick);
+      if (banned) {
+        set(bannedNickRef, true).catch(() => {});
+      } else {
+        set(bannedNickRef, null).catch(() => {});
+      }
+    };
+
+    /* monitoruj banned listę - jeśli bieżący user jest zbanowany, wyloguj go */
+    onValue(bannedRef, s => {
+      const banned = s.val() || {};
+      const auth = window.getAuth ? window.getAuth() : null;
+      if (auth && auth.nick && banned[auth.nick]) {
+        alert("Zostałeś wyrzucony z serwera!");
+        if (window.logout) window.logout();
+      }
+    });
 
   } catch (err) {
     cloud.status("error", err && err.message);
