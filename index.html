@@ -1868,6 +1868,10 @@ const AUTH_ADMINS = {
 };
 const AUTH_LS_KEY = "legendstimer_auth";
 
+/* Firebase (moduł niżej) czeka na ten sygnał — bez logowania nie łączy się
+   z bazą, więc nie pobiera timerów/czatu i nie zgłasza obecności w pokoju */
+window.__authReady = new Promise(resolve => { window.__authGo = resolve; });
+
 function getAuth() {
   try {
     const s = localStorage.getItem(AUTH_LS_KEY);
@@ -1974,6 +1978,7 @@ function initAuth() {
   if (auth && auth.nick) {
     hideLoginModal();
     if (auth.adminMode) showAdminPanel();
+    window.__authGo();
     return true;
   }
 
@@ -2018,6 +2023,7 @@ function initAuth() {
       loginTime: Date.now()
     };
     setAuth(auth);
+    window.__authGo();
 
     hideLoginModal(true);
     if (adminMode) showAdminPanel();
@@ -2103,6 +2109,7 @@ const cfg   = window.FIREBASE_CONFIG || {};
 if (!cfg.databaseURL) {
   cloud.status("local");
 } else {
+  await window.__authReady;      // dopiero po zalogowaniu
   try {
     const { initializeApp } =
       await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
