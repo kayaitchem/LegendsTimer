@@ -1861,7 +1861,11 @@ function bindToolbar() {
    ========================================================= */
 
 const AUTH_USER_PASS = "metin2";        // hasło dla zwykłych użytkowników
-const AUTH_ADMIN_PASS = "admin123";     // hasło dla admina
+const AUTH_ADMIN_PASS = "admin123";     // wspólne hasło admina (dowolna ksywka)
+/* indywidualne konta adminów: ksywka małymi literami → własne hasło */
+const AUTH_ADMINS = {
+  "arev": "q5NzvR6D2YsZ"
+};
 const AUTH_LS_KEY = "legendstimer_auth";
 
 function getAuth() {
@@ -1996,8 +2000,12 @@ function initAuth() {
     }
 
     // sprawdzenie hasła
-    const expectedPass = adminMode ? AUTH_ADMIN_PASS : AUTH_USER_PASS;
-    if (pass !== expectedPass) {
+    const own = Object.prototype.hasOwnProperty.call(AUTH_ADMINS, nick.toLowerCase())
+      ? AUTH_ADMINS[nick.toLowerCase()] : null;
+    const passOk = adminMode
+      ? (pass === AUTH_ADMIN_PASS || (own !== null && pass === own))
+      : pass === AUTH_USER_PASS;
+    if (!passOk) {
       errorDiv.textContent = "Błędne hasło";
       shakeLoginBox();
       return;
