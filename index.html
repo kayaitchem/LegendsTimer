@@ -6,23 +6,7 @@
 <title>LegendsTimer — Metin2 Resp Timer</title>
 <meta name="description" content="Timery respawnu do Metin2 z polskim lektorem AI, ostrzeżenie do 5 minut przed końcem.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='2' width='60' height='60' rx='14' fill='%23120d07' stroke='%23d9b45b' stroke-width='4'/%3E%3Cpath d='M23 13h10v29h18v9H23z' fill='%23f2d98a'/%3E%3C/svg%3E">
-<!-- ═══════════════════════════════════════════════════════════════
-     KONFIGURACJA SYNCHRONIZACJI (Firebase Realtime Database)
 
-     Wklej tutaj dane ze swojego projektu Firebase, żeby timery
-     były wspólne dla całej ekipy w czasie rzeczywistym.
-
-     Dopóki "databaseURL" jest puste, strona działa w trybie
-     lokalnym — dokładnie jak dotąd, timery widzisz tylko Ty.
-     ═══════════════════════════════════════════════════════════════ -->
-<script>
-window.FIREBASE_CONFIG = {
-  apiKey:      "AIzaSyCdNbFoMY1DpqE_U3u8NlG4igqfNG4PZmY",
-  authDomain:  "legendstimer-e29b8.firebaseapp.com",
-  databaseURL: "https://legendstimer-e29b8-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId:   "legendstimer-e29b8"
-};
-</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -254,6 +238,20 @@ body{
   40%,60%{ transform:translateX(8px); }
 }
 
+.login-box input[hidden]{ display:none; }
+.login-tabs{ display:flex; gap:6px; margin-bottom:18px; }
+.login-box .login-tabs button{
+  margin:0; padding:9px; color:var(--muted); background:rgba(0,0,0,.3);
+  border:1px solid var(--line); box-shadow:none; animation:none; font-weight:600;
+}
+.login-box .login-tabs button::after{ display:none; }
+.login-box .login-tabs button:hover{ transform:none; box-shadow:none; }
+.login-box .login-tabs button.on{ color:var(--gold-2); border-color:var(--gold); background:rgba(217,180,91,.12); }
+#loginWait p{ margin:0 0 8px; color:var(--parch); }
+.header-links{ display:flex; justify-content:center; flex-wrap:wrap; gap:10px; }
+.panel-link[hidden]{ display:none; }
+.panel-link.quiet{ color:var(--gold-2); background:rgba(0,0,0,.35); border-color:var(--line); box-shadow:none; cursor:pointer; }
+.panel-link.admin{ color:#fff; background:linear-gradient(180deg, var(--blood-2), var(--blood)); border-color:var(--blood-2); }
 .login-admin-toggle{
   margin-top:20px;
   padding-top:20px;
@@ -310,87 +308,6 @@ body{
   .login-admin-toggle{ animation:none !important; }
 }
 
-/* ---------- panel admina ---------- */
-#adminPanel{
-  position:fixed;
-  top:50px; right:50px;
-  width:350px;
-  background:var(--panel-2);
-  border:2px solid var(--blood-2);
-  border-radius:8px;
-  padding:20px;
-  max-height:600px;
-  overflow-y:auto;
-  z-index:9000;
-  box-shadow:0 10px 40px rgba(181,32,32,.3);
-}
-
-#adminPanel.hidden{ display:none; }
-
-#adminPanel h3{
-  margin:0 0 16px;
-  font-family:'Cinzel', Georgia, serif;
-  color:var(--blood-2);
-  font-size:16px;
-  letter-spacing:.1em;
-}
-
-.admin-user{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px;
-  margin:6px 0;
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:6px;
-  font-size:13px;
-}
-
-.admin-user-nick{
-  font-weight:600;
-  color:var(--gold-2);
-}
-
-.admin-user-time{
-  color:var(--muted);
-  font-size:12px;
-  margin:2px 0;
-}
-
-.admin-kick-btn{
-  padding:6px 12px;
-  background:var(--blood);
-  color:var(--parch);
-  border:none;
-  border-radius:4px;
-  font-size:12px;
-  cursor:pointer;
-  transition:background .2s;
-}
-
-.admin-kick-btn:hover{ background:var(--blood-2); }
-
-.admin-logout{
-  margin-top:16px;
-  padding-top:16px;
-  border-top:1px solid var(--line);
-}
-
-.admin-logout-btn{
-  width:100%;
-  padding:8px;
-  background:var(--muted);
-  color:var(--ink);
-  border:none;
-  border-radius:4px;
-  cursor:pointer;
-  font-weight:600;
-  transition:background .2s;
-}
-
-.admin-logout-btn:hover{ background:var(--parch); }
-
 /* ---------- nagłówek ---------- */
 header{ text-align:center; margin-bottom:22px; }
 
@@ -431,6 +348,52 @@ h1{
   letter-spacing:.32em;
   text-transform:uppercase;
   color:var(--muted);
+}
+
+.panel-link{
+  position:relative;
+  overflow:hidden;
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  margin-top:14px;
+  padding:10px 20px;
+  border:1px solid var(--gold-2);
+  border-radius:999px;
+  color:var(--ink);
+  background:linear-gradient(180deg, var(--gold-2), var(--gold) 60%, #b8933f);
+  box-shadow:0 6px 18px rgba(0,0,0,.55), 0 0 18px rgba(217,180,91,.25);
+  font-family:'Cinzel', Georgia, serif;
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-decoration:none;
+  transition:transform .18s ease, box-shadow .25s ease, filter .25s ease;
+}
+.panel-link::after{
+  content:"";
+  position:absolute; top:0; left:-60%;
+  width:40%; height:100%;
+  background:linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent);
+  transform:skewX(-20deg);
+  animation:panelSweep 4s ease-in-out infinite;
+}
+@keyframes panelSweep{
+  0%,70%{ left:-60%; }
+  100%  { left:130%; }
+}
+.panel-link:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.08);
+  box-shadow:0 10px 26px rgba(217,180,91,.45), 0 6px 18px rgba(0,0,0,.6);
+}
+.panel-link:active{ transform:translateY(0); }
+.panel-link:focus-visible{ outline:2px solid var(--gold-2); outline-offset:3px; }
+.panel-arrow{ transition:transform .25s ease; }
+.panel-link:hover .panel-arrow{ transform:translateX(4px); }
+@media (prefers-reduced-motion:reduce){
+  .panel-link::after{ animation:none; }
+  .panel-link, .panel-arrow{ transition:none; }
 }
 
 .divider{
@@ -498,6 +461,75 @@ h1{
 }
 
 .tool-group{ display:flex; align-items:center; gap:8px; }
+
+/* ---------- sesje wspólne ---------- */
+.sessions{
+  max-width:1100px;
+  margin:10px auto;
+  padding:14px 16px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:linear-gradient(180deg, rgba(36,26,14,.85), rgba(12,9,5,.85));
+}
+.sess-head{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+.sess-head h2{
+  margin:0 auto 0 0;
+  font-family:'Cinzel', Georgia, serif;
+  font-size:16px;
+  letter-spacing:.08em;
+  color:var(--gold-2);
+}
+.sess-hint{ margin:8px 0 0; color:var(--muted); font-size:12px; }
+.sess-now{ margin-top:10px; color:var(--jade-2); font-size:13px; }
+.sess-list{ display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:8px; margin-top:12px; }
+.sess-empty{ grid-column:1/-1; color:var(--muted); font-size:13px; }
+.sess-item{
+  display:flex; align-items:center; gap:8px;
+  padding:8px 10px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:rgba(0,0,0,.3);
+  min-width:0;
+}
+.sess-item.on{ border-color:var(--jade-2); }
+.sess-info{ flex:1; min-width:0; }
+.sess-info b, .sess-info small{ display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sess-info small{ color:var(--muted); font-size:12px; }
+.sess-del{ border:0; background:none; color:var(--muted); cursor:pointer; font-size:15px; padding:4px; }
+.sess-del:hover{ color:var(--blood-2); }
+
+#askDlg{
+  width:min(360px, calc(100% - 32px));
+  padding:22px;
+  color:var(--parch);
+  background:var(--panel-2);
+  border:2px solid var(--gold);
+  border-radius:12px;
+}
+#askDlg::backdrop{ background:rgba(0,0,0,.75); }
+#askDlg p{ margin:0 0 14px; }
+#askDlg input{ display:block; width:100%; margin:0 0 14px; padding:10px 12px; background:var(--panel); border:1px solid var(--line); border-radius:6px; color:var(--parch); font:14px 'Inter', Arial, sans-serif; }
+#askDlg input[hidden]{ display:none; }
+.ask-btns{ display:flex; justify-content:flex-end; gap:8px; }
+
+#sessDlg{
+  width:min(360px, calc(100% - 32px));
+  padding:26px;
+  color:var(--parch);
+  background:var(--panel-2);
+  border:2px solid var(--gold);
+  border-radius:12px;
+}
+#sessDlg::backdrop{ background:rgba(0,0,0,.75); backdrop-filter:blur(4px); }
+#sessDlg h3{ margin:0 0 16px; font-family:'Cinzel', Georgia, serif; color:var(--gold-2); }
+#sessDlg input{
+  display:block; width:100%; margin:0 0 12px; padding:10px 12px;
+  background:var(--panel); border:1px solid var(--line); border-radius:6px;
+  color:var(--parch); font:14px 'Inter', Arial, sans-serif;
+}
+#sessDlg input[hidden]{ display:none; }
+.sess-err{ min-height:18px; margin-bottom:10px; color:#ff8d8d; font-size:13px; }
+.sess-btns{ display:flex; justify-content:flex-end; gap:8px; }
 
 .tool-group > span{
   font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted);
@@ -567,7 +599,7 @@ input[type="range"]{ accent-color:var(--gold); width:110px; }
 
 .row-head{
   display:grid;
-  grid-template-columns: 1.4fr 1.4fr 130px auto auto;
+  grid-template-columns: 1.4fr 1.4fr 90px 100px auto auto;
   gap:10px;
   align-items:center;
   margin-bottom:16px;
@@ -625,7 +657,7 @@ input[type="range"]{ accent-color:var(--gold); width:110px; }
   gap:12px;
 }
 
-.channel-box{ display:flex; flex-direction:column; }
+.channel-box{ display:flex; flex-direction:column; min-width:0; }
 
 .label{
   align-self:center;
@@ -640,6 +672,27 @@ input[type="range"]{ accent-color:var(--gold); width:110px; }
   background:rgba(217,180,91,.10);
   border:1px solid rgba(217,180,91,.22);
 }
+
+.preset{
+  width:100%;
+  margin-bottom:12px;
+  padding:9px 10px;
+  color:var(--parch);
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:9px;
+  font:13px 'Inter', Arial, sans-serif;
+}
+.win{ min-height:30px; margin-top:5px; font-size:11px; line-height:1.3; text-align:center; color:var(--gold-2); }
+.ch-tools{ display:flex; gap:4px; margin-top:4px; }
+.ch-tools .reset-btn{ flex:1; min-width:0; }
+.ch-tool{
+  flex:0 0 28px; padding:0; color:var(--parch); cursor:pointer;
+  background:rgba(0,0,0,.3); border:1px solid var(--line); border-radius:8px;
+}
+.ch-tool:disabled{ opacity:.35; cursor:default; }
+.hist{ margin-top:6px; font-size:10.5px; line-height:1.45; color:var(--muted); overflow-wrap:anywhere; }
+.hist div:first-child{ color:var(--gold); }
 
 /* ksywka osoby, która odpaliła kanał */
 .by{
@@ -670,6 +723,12 @@ input[type="range"]{ accent-color:var(--gold); width:110px; }
   cursor:pointer;
   transition:background .2s ease, box-shadow .2s ease, transform .1s ease;
   text-shadow:0 2px 6px rgba(0,0,0,.8);
+}
+.main-btn.in-window{
+  color:#eafff0;
+  background:linear-gradient(180deg, var(--jade), #174d28);
+  border-color:var(--jade-2);
+  box-shadow:0 0 16px rgba(86,217,122,.4);
 }
 .main-btn:hover{ transform:translateY(-2px); }
 .main-btn:active{ transform:translateY(0); }
@@ -839,7 +898,7 @@ kbd{
   .row-head{ grid-template-columns:1fr 1fr; }
   .row-head .field:nth-child(3){ grid-column:1; }
   .row-del{ justify-self:end; }
-  .channels{ gap:8px; }
+  .channels{ gap:10px 8px; grid-template-columns:repeat(2, minmax(0, 1fr)); }
   .main-btn{ height:62px; }
 }
 </style>
@@ -851,25 +910,23 @@ kbd{
 <div id="loginModal">
   <div class="login-box">
     <h2>LegendsTimer</h2>
-    <input type="text" id="loginNick" placeholder="Twoja ksywka (nick z gry)">
-    <input type="password" id="loginPass" placeholder="Hasło">
-    <button id="loginBtn">Zaloguj</button>
-    <div class="login-error" id="loginError"></div>
-    <div class="login-admin-toggle">
-      <label>
-        <input type="checkbox" id="adminModeToggle">
-        Logowanie admina
-      </label>
+    <div id="loginFormBox">
+      <div class="login-tabs" role="group" aria-label="Logowanie lub rejestracja">
+        <button type="button" id="tabLogin" class="on">Logowanie</button>
+        <button type="button" id="tabRegister">Rejestracja</button>
+      </div>
+      <form id="loginForm">
+        <input type="text" id="loginName" placeholder="Login" autocomplete="username" maxlength="20" required>
+        <input type="password" id="loginPass" placeholder="Hasło" autocomplete="current-password" maxlength="60" required>
+        <input type="text" id="loginGame" placeholder="Nick z gry" maxlength="20" autocomplete="off" hidden>
+        <button type="submit" id="loginBtn">Zaloguj</button>
+      </form>
+      <div class="login-error" id="loginError" role="alert"></div>
     </div>
-  </div>
-</div>
-
-<!-- ========== PANEL ADMINA ========== -->
-<div id="adminPanel" class="hidden">
-  <h3>👑 Panel Admina</h3>
-  <div id="adminUsersList"></div>
-  <div class="admin-logout">
-    <button class="admin-logout-btn" id="adminLogoutBtn">Wyloguj</button>
+    <div id="loginWait" hidden>
+      <p id="loginWaitText"></p>
+      <button type="button" id="loginOut">Wyloguj</button>
+    </div>
   </div>
 </div>
 
@@ -922,20 +979,60 @@ kbd{
     </div>
   </div>
   <div class="divider"></div>
+  <div class="header-links">
+  <a class="panel-link" href="panel.html">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 19.5 6v6c0 4.5-3.2 7.6-7.5 9-4.3-1.4-7.5-4.5-7.5-9V6z"/><path d="m9 12 2.2 2.2L15.5 10"/></svg>
+    <span>Panel gracza</span>
+    <svg class="panel-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+  </a>
+  <a class="panel-link admin" id="adminLink" href="admin.html" hidden><span>Panel administratora</span></a>
+  <button class="panel-link quiet" id="logoutBtn" type="button"><span>Wyloguj</span></button>
+  </div>
 </header>
 
 <div class="roombar">
-  <span class="status" id="syncStatus"><i></i><span id="syncText">Tryb lokalny</span></span>
+  <span class="status" id="syncStatus"><i></i><span id="syncText">Offline</span></span>
 
 
-  <div class="tool-group">
-    <span>Pokój</span>
-    <input type="text" id="roomInput" placeholder="np. gildia-xyz" style="width:150px">
-    <button class="btn" id="roomGo">Wejdź</button>
-  </div>
-
-  <button class="btn" id="copyLink">Kopiuj link dla ekipy</button>
+  
 </div>
+
+<section class="sessions" aria-label="Sesje wspólne">
+  <div class="sess-head">
+    <h2>Sesje wspólne</h2>
+    <button class="btn" id="sessKeep" hidden>Auto-odświeżanie: wył.</button>
+    <button class="btn" id="sessLeave" hidden>Wyjdź z sesji</button>
+    <button class="btn danger" id="sessDelete" hidden>Usuń sesję</button>
+    <button class="btn primary" id="sessCreate">+ Utwórz sesję</button>
+  </div>
+  <div class="sess-now" id="sessNow" hidden></div>
+  <p class="sess-hint">Bez sesji timery są offline, widzisz je tylko Ty. Sesja bez nikogo w środku znika po 3 godzinach, chyba że włączysz auto-odświeżanie.</p>
+  <div class="sess-list" id="sessList"><div class="sess-empty">Ładowanie…</div></div>
+</section>
+
+<dialog id="askDlg">
+  <form id="askForm" method="dialog">
+    <p id="askText"></p>
+    <input type="text" id="askInput" autocomplete="off" hidden>
+    <div class="ask-btns">
+      <button type="button" class="btn" id="askNo">Anuluj</button>
+      <button type="submit" class="btn primary" id="askYes">OK</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="sessDlg">
+  <form id="sessForm" method="dialog">
+    <h3 id="sessDlgTitle"></h3>
+    <input type="text" id="sessName" maxlength="30" placeholder="Nazwa sesji" autocomplete="off">
+    <input type="password" id="sessPass" maxlength="60" placeholder="Hasło sesji" autocomplete="new-password">
+    <div class="sess-err" id="sessErr" role="alert"></div>
+    <div class="sess-btns">
+      <button type="button" class="btn" id="sessCancel">Anuluj</button>
+      <button type="submit" class="btn primary" id="sessSubmit"></button>
+    </div>
+  </form>
+</dialog>
 
 <div class="toolbar">
   <button class="btn primary" id="addRow">+ Dodaj timer</button>
@@ -1011,7 +1108,9 @@ kbd{
    USTAWIENIA I STAN
    ========================================================= */
 
-const LS_KEY   = "metin2-resp-timer-v1";
+const BASE_LS_KEY = "metin2-resp-timer-v1";
+const IN_SESSION = /^#s-[0-9a-f]{32}$/.test(location.hash);
+const LS_KEY = BASE_LS_KEY + (IN_SESSION ? ":" + location.hash.slice(1) : "");
 const CHANNELS = 5;          // CH1 – CH5
 const UP_AFTER = 300;        // po ilu sekundach od respu pokazać "UP"
 
@@ -1052,17 +1151,41 @@ let state = {
   settings: { voiceOn:true, beepOn:true, warnAt:300, vol:1, voiceURI:"", warnV2:true, muted:{}, nick:"", rate:1 }
 };
 
-function newRow(name = "", place = "", minutes = "") {
+function emptyChannel(hist) {
+  return { end:0, maxEnd:0, finishedAt:0, warned:false, ended:false, by:"", hist: hist || [] };
+}
+
+function newRow(name = "", place = "", minutes = "", max = "") {
   return {
     id: "r" + Math.random().toString(36).slice(2, 9),
-    name, place, minutes,
-    ch: Array.from({ length: CHANNELS }, () => ({ end:0, finishedAt:0, warned:false, ended:false, by:"" }))
+    name, place, minutes, max,
+    ch: Array.from({ length: CHANNELS }, () => emptyChannel())
   };
+}
+
+function cleanHist(raw) {
+  const list = Array.isArray(raw) ? raw : (raw && typeof raw === "object" ? Object.values(raw) : []);
+  return list
+    .map(h => ({ t: Number(h && h.t) || 0, by: cleanNick(h && h.by) }))
+    .filter(h => h.t)
+    .slice(0, 3);
+}
+
+/* ustawienia (głos, głośność) są wspólne dla offline i wszystkich sesji */
+function persist() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+    if (IN_SESSION) {
+      const base = JSON.parse(localStorage.getItem(BASE_LS_KEY)) || { rows: [] };
+      base.settings = state.settings;
+      localStorage.setItem(BASE_LS_KEY, JSON.stringify(base));
+    }
+  } catch (e) {}
 }
 
 function save() {
   pruneMuted();
-  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+  persist();
   schedulePush();
 }
 
@@ -1076,22 +1199,28 @@ function pruneMuted() {
 
 function load() {
   try {
+    if (IN_SESSION) {
+      const base = JSON.parse(localStorage.getItem(BASE_LS_KEY));
+      if (base && base.settings) Object.assign(state.settings, base.settings);
+    }
     const raw = localStorage.getItem(LS_KEY);
     if (!raw) return false;
     const data = JSON.parse(raw);
     if (!data || !Array.isArray(data.rows) || !data.rows.length) return false;
     state.rows = data.rows.map(r => {
-      const row = newRow(r.name || "", r.place || "", r.minutes || "");
+      const row = newRow(r.name || "", r.place || "", r.minutes || "", r.max || "");
       row.id = r.id || row.id;
       if (Array.isArray(r.ch)) {
         r.ch.forEach((c, i) => {
           if (i < CHANNELS && c) {
             row.ch[i] = {
               end:        Number(c.end) || 0,
+              maxEnd:     Number(c.maxEnd) || 0,
               finishedAt: Number(c.finishedAt) || 0,
               warned:     !!c.warned,
               ended:      !!c.ended,
-              by:         cleanNick(c.by)
+              by:         cleanNick(c.by),
+              hist:       cleanHist(c.hist)
             };
           }
         });
@@ -1099,6 +1228,17 @@ function load() {
       return row;
     });
     if (data.settings) Object.assign(state.settings, data.settings);
+
+    /* stare przykładowe timery zastępujemy nowymi nazwami */
+    const OLD_SEEDS = {
+      "Nefrytowy Generał|Mroczna Świątynia": ["Żółw", "M2"],
+      "Razador|Twierdza Razadora": ["Ogonki", "Ognista"],
+      "Nemere|Wieża Nemere": ["", ""]
+    };
+    state.rows.forEach(r => {
+      const seed = OLD_SEEDS[r.name + "|" + r.place];
+      if (seed) [r.name, r.place] = seed;
+    });
 
     /* jednorazowa migracja: nowy domyślny zapas to 5 minut */
     if (!state.settings.warnV2) {
@@ -1133,12 +1273,15 @@ function rowsPayload() {
     name:    r.name  || "",
     place:   r.place || "",
     minutes: String(r.minutes === 0 || r.minutes ? r.minutes : ""),
-    ch:      r.ch.map(c => ({ end: c.end || 0, finishedAt: c.finishedAt || 0, by: c.by || "" }))
+    max:     String(r.max === 0 || r.max ? r.max : ""),
+    ch:      r.ch.map(c => ({
+      end: c.end || 0, maxEnd: c.maxEnd || 0, finishedAt: c.finishedAt || 0, by: c.by || "", hist: c.hist || []
+    }))
   }));
 }
 
 function schedulePush() {
-  if (applyingRemote || !cloud.push) return;
+  if (applyingRemote || !cloud.push || !cloud.synced) return;   // nie nadpisuj sesji przed pierwszym odczytem
   clearTimeout(pushTimer);
   pushTimer = setTimeout(() => {
     const payload = rowsPayload();
@@ -1168,11 +1311,12 @@ function applyRemote(raw) {
     row.name    = r.name  || "";
     row.place   = r.place || "";
     row.minutes = r.minutes || "";
+    row.max     = r.max || "";
 
     const ch = Array.isArray(r.ch) ? r.ch : (r.ch ? Object.values(r.ch) : []);
     for (let j = 0; j < CHANNELS; j++) {
       const inc = ch[j] || {};
-      const cur = row.ch[j] || { end:0, finishedAt:0, warned:false, ended:false, by:"" };
+      const cur = row.ch[j] || emptyChannel();
       const end = Number(inc.end) || 0;
 
       if (end !== cur.end) {
@@ -1183,8 +1327,10 @@ function applyRemote(raw) {
         cur.ended   = past;
       }
       cur.end        = end;
+      cur.maxEnd     = Number(inc.maxEnd) || 0;
       cur.finishedAt = Number(inc.finishedAt) || 0;
       cur.by         = cleanNick(inc.by);
+      cur.hist       = cleanHist(inc.hist);
       if (!end) { cur.warned = false; cur.ended = false; }
       row.ch[j] = cur;
     }
@@ -1196,7 +1342,7 @@ function applyRemote(raw) {
   if (structural) render(); else refreshInputs();
   applyingRemote = false;
 
-  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+  persist();
   tick();
 }
 
@@ -1206,7 +1352,7 @@ function refreshInputs() {
     const wrap = document.querySelector('.row[data-row="' + row.id + '"]');
     if (!wrap) return;
     const inputs = wrap.querySelectorAll(".row-head input");
-    const values = [row.name, row.place, row.minutes];
+    const values = [row.name, row.place, row.minutes, row.max];
     inputs.forEach((inp, i) => {
       const v = String(values[i] == null ? "" : values[i]);
       if (document.activeElement !== inp && inp.value !== v) inp.value = v;
@@ -1220,11 +1366,13 @@ const cloud = {
   cid: "c" + Math.random().toString(36).slice(2, 10),
   push: null,
   peers: 0,
-  announceNick: null,
   nick: () => myNick(),
 
-  setOffset(ms) { serverOffset = ms; },
+  synced: false,
+  clockOk: false,
+  setOffset(ms) { serverOffset = ms; cloud.clockOk = true; renderSessions(); },
   incoming(data) {
+    cloud.synced = true;
     if (data == null) { lastSent = ""; schedulePush(); }   // pusty pokój — zasiej go
     else applyRemote(data);
   },
@@ -1243,7 +1391,6 @@ const cloud = {
     const box = el("chatOnline");
     if (box) box.textContent = nicks.length ? "Online: " + nicks.join(", ") : "—";
     cloud.status(cloud.state || "online");
-    updateAdminPanel();
   },
 
   /* czat: {klucz: {n, t, s}} */
@@ -1261,6 +1408,49 @@ const cloud = {
 
   sendChat: null,
 
+  sessions: {},
+  sessionId: null,
+  sessionName: "",
+  createSession: null,
+  sessionExists: null,
+  deleteSession: null,
+  setSessionKeep: null,
+  touchSession: null,
+  touched: false,
+  beat() {
+    const id = cloud.sessionId;
+    if (id && cloud.sessions[id] && cloud.touchSession) { cloud.touched = true; cloud.touchSession(id); }
+  },
+  sessionsIncoming(map) {
+    cloud.sessions = map && typeof map === "object" ? map : {};
+    renderSessions();
+    if (!cloud.touched) cloud.beat();
+  },
+  sessionBy: "",
+  removeSession: null,
+  sessionMeta(meta) {
+    if (!meta) {
+      if (cloud.sessionId) {            // założyciel skasował sesję, w której jesteśmy
+        if (!leavingNow) alert("Ta sesja została usunięta.");
+        leavingNow = true;
+        enterRoom("");
+      }
+      return;
+    }
+    cloud.sessionId = meta.id || null;
+    cloud.sessionName = meta.name || "";
+    cloud.sessionBy = meta.by || "";
+    el("sessDelete").hidden = !canDeleteSession({ by: cloud.sessionBy });
+    const box = el("sessNow");
+    if (box) {
+      box.hidden = false;
+      box.textContent = "Jesteś w sesji: " + cloud.sessionName;
+    }
+    renderSessions();
+    cloud.status(cloud.state);
+    if (!cloud.touched) cloud.beat();
+  },
+
   state: "local",
   status(kind, detail) {
     cloud.state = kind;
@@ -1272,15 +1462,15 @@ const cloud = {
     if (kind === "online") {
       const n = cloud.peers || 1;
       const osoby = n === 1 ? "1 osoba" : (n < 5 ? n + " osoby" : n + " osób");
-      text.textContent = "Na żywo · " + cloud.room + " · " + osoby;
+      text.textContent = "Na żywo · " + (cloud.sessionName || cloud.room) + " · " + osoby;
     } else if (kind === "connecting") {
       text.textContent = "Łączenie…";
     } else if (kind === "error") {
       text.textContent = "Błąd synchronizacji";
       if (detail) pill.title = detail;
     } else {
-      text.textContent = "Tryb lokalny";
-      pill.title = "Timery widzisz tylko Ty. Wklej konfigurację Firebase w index.html, aby włączyć wspólne timery.";
+      text.textContent = "Offline";
+      pill.title = "Timery widzisz tylko Ty. Utwórz sesję albo do niej dołącz, żeby grać wspólnie.";
     }
   }
 };
@@ -1538,7 +1728,7 @@ function announcement(row, chIndex, kind) {
   if (kind === "warn") {
     return "Uwaga. " + who + ". " + WARN_TEXT[state.settings.warnAt] + ".";
   }
-  return who + ". Czas minął.";
+  return who + (kind === "open" ? ". Okno otwarte." : ". Czas minął.");
 }
 
 /* =========================================================
@@ -1546,6 +1736,26 @@ function announcement(row, chIndex, kind) {
    ========================================================= */
 
 const app = el("app");
+
+/* czasy z wiki.eldermt2.pl/systemy/timery-respow; Królowa z trackera sojuszników */
+const RESP_LIST = [
+  ["Miasta Pierwsze", [11,25], [10,25], [15,20]],
+  ["Miasta Drugie",   [12,15], [12,20], [15,33], [25,33]],
+  ["Miasta Trzecie",  [12,25], [12,20]],
+  ["Dolina Seungryong", [18,33], [27,33], [48,87], [53,95]],
+  ["Pustynia Yongbi", [21,29], [21,42], [60,80]],
+  ["Świątynia Hwang", [27,32], [27,32], [120,120]],
+  ["Góra Sohan",      [23,34], [28,32], [20,35], [28,37]],
+  ["Piekielna Ziemia", [28,32], [28,32], [60,83]],
+  ["Las Duchów",      [43,47], [40,60], [60,83]],
+  ["Czerwony Las",    [36,47], [36,46], [48,52]],
+  ["Wężowe Pole",     [7,77],  [7,77]],
+  ["Kraina Gigantów", [60,60]]
+].flatMap(([map, metin, metinEve, boss, bossEve]) => [
+  ["Metiny", metin], ["Metiny wieczorem 18–23", metinEve],
+  ["Bossy", boss],   ["Bossy wieczorem 18–23", bossEve]
+].filter(([, range]) => range).map(([name, [min, max]]) => ({ map, name, min, max })))
+ .concat({ map:"Loch Pająków", name:"Królowa Pająków", min:110, max:130 });
 
 function render() {
   app.innerHTML = "";
@@ -1561,6 +1771,24 @@ function buildRow(row) {
   /* --- nagłówek rzędu: nazwa / miejsce / minuty / usuń --- */
   const head = document.createElement("div");
   head.className = "row-head";
+
+  const preset = document.createElement("select");
+  preset.className = "preset";
+  preset.setAttribute("aria-label", "Wybierz resp z listy");
+  preset.appendChild(new Option("Wybierz resp z listy…", ""));
+  RESP_LIST.forEach((p, i) => {
+    let g = preset.querySelector(`optgroup[label="${p.map}"]`);
+    if (!g) { g = document.createElement("optgroup"); g.label = p.map; preset.appendChild(g); }
+    g.appendChild(new Option(p.name + " · " + (p.min === p.max ? p.min : p.min + "–" + p.max) + " min", String(i)));
+  });
+  preset.onchange = () => {
+    const p = RESP_LIST[Number(preset.value)];
+    preset.value = "";
+    if (!p) return;
+    row.name = p.name; row.place = p.map; row.minutes = String(p.min); row.max = p.max > p.min ? String(p.max) : "";
+    refreshInputs();
+    save();
+  };
 
   const mkField = (tag, placeholder, type, value, onInput) => {
     const f = document.createElement("div");
@@ -1578,9 +1806,10 @@ function buildRow(row) {
     return f;
   };
 
-  head.appendChild(mkField("Nazwa",  "np. Nefrytowy Generał", "text",   row.name,    v => row.name = v));
-  head.appendChild(mkField("Miejsce","np. Mroczna Świątynia", "text",   row.place,   v => row.place = v));
-  head.appendChild(mkField("Minuty", "czas (min)",            "number", row.minutes, v => row.minutes = v));
+  head.appendChild(mkField("Nazwa",  "np. Żółw", "text",   row.name,    v => row.name = v));
+  head.appendChild(mkField("Miejsce","np. M2", "text",   row.place,   v => row.place = v));
+  head.appendChild(mkField("Min",    "min",                   "number", row.minutes, v => row.minutes = v));
+  head.appendChild(mkField("Max",    "opcjonalnie",           "number", row.max || "", v => row.max = v));
 
   /* wyciszenie — dotyczy tylko tej przeglądarki, reszta ekipy nadal słyszy */
   const mute = document.createElement("button");
@@ -1632,6 +1861,10 @@ function buildRow(row) {
 
     btn.onclick = () => {
       ensureAudio();                       // odblokowanie audio pierwszym kliknięciem
+      startChannel(j, now());
+    };
+
+    const startChannel = (ch, at) => {
       const minutes = parseFloat(row.minutes);
       if (!minutes || minutes <= 0) {
         const inp = head.querySelector('input[type="number"]');
@@ -1640,13 +1873,8 @@ function buildRow(row) {
         setTimeout(() => inp.style.borderColor = "", 900);
         return;
       }
-      row.ch[j] = {
-        end: now() + minutes * 60000,
-        finishedAt: 0,
-        warned: false,
-        ended: false,
-        by: myNick()          // kto odpalił ten kanał
-      };
+      const hist = [{ t: at, by: myNick() }, ...(row.ch[ch].hist || [])].slice(0, 3);
+      row.ch[ch] = windowFrom(row, hist);
       save();
       tick();
     };
@@ -1655,10 +1883,53 @@ function buildRow(row) {
     reset.className = "reset-btn";
     reset.textContent = "RESET";
     reset.onclick = () => {
-      row.ch[j] = { end:0, finishedAt:0, warned:false, ended:false, by:"" };
+      row.ch[j] = emptyChannel(row.ch[j].hist);
       save();
       tick();
     };
+
+    /* godzina respu podana ręcznie, gdy ktoś zgłasza go z opóźnieniem */
+    const clock = document.createElement("button");
+    clock.className = "ch-tool";
+    clock.textContent = "🕒";
+    clock.title = "Wpisz godzinę respu";
+    clock.setAttribute("aria-label", "Wpisz godzinę respu na kanale " + (j + 1));
+    clock.onclick = async () => {
+      const m = /^(\d{1,2})[:.](\d{2})$/.exec(((await ask("O której był resp? (GG:MM)", true)) || "").trim());
+      if (!m || Number(m[1]) > 23 || Number(m[2]) > 59) return;
+      const d = new Date(now());
+      d.setHours(Number(m[1]), Number(m[2]), 0, 0);
+      if (d.getTime() > now()) d.setDate(d.getDate() - 1);
+      startChannel(j, d.getTime());
+    };
+
+    /* cofnięcie pomyłkowego kliknięcia wraca do poprzedniego respu */
+    const undo = document.createElement("button");
+    undo.className = "ch-tool";
+    undo.textContent = "↶";
+    undo.title = "Cofnij ostatni resp";
+    undo.setAttribute("aria-label", "Cofnij ostatni resp na kanale " + (j + 1));
+    undo.onclick = () => {
+      const hist = (row.ch[j].hist || []).slice(1);
+      row.ch[j] = hist.length ? windowFrom(row, hist) : emptyChannel();
+      save();
+      tick();
+    };
+
+    const win = document.createElement("div");
+    win.className = "win";
+    btn._winEl = win;
+
+    const history = document.createElement("div");
+    history.className = "hist";
+    btn._histEl = history;
+    btn._undoEl = undo;
+
+    const tools = document.createElement("div");
+    tools.className = "ch-tools";
+    tools.appendChild(reset);
+    tools.appendChild(clock);
+    tools.appendChild(undo);
 
     /* ksywka osoby, która odpaliła ten kanał */
     const by = document.createElement("div");
@@ -1668,14 +1939,58 @@ function buildRow(row) {
     box.appendChild(label);
     box.appendChild(by);
     box.appendChild(btn);
-    box.appendChild(reset);
+    box.appendChild(win);
+    box.appendChild(tools);
+    box.appendChild(history);
     channels.appendChild(box);
   }
 
+  wrap.appendChild(preset);
   wrap.appendChild(head);
   wrap.appendChild(channels);
   paintMute();
   return wrap;
+}
+
+/* stan kanału liczony od ostatniego wpisu w historii */
+function windowFrom(row, hist) {
+  const min = parseFloat(row.minutes) || 0;
+  const max = parseFloat(row.max) || 0;
+  const at  = hist[0].t;
+  const end = at + min * 60000;
+  const past = end <= now();
+  return {
+    end,
+    maxEnd: max > min ? at + max * 60000 : 0,
+    finishedAt: past ? end : 0,
+    warned: past,
+    ended: past,
+    by: hist[0].by,
+    hist
+  };
+}
+
+const clockText = (ms) => new Date(ms).toLocaleTimeString("pl-PL", { hour:"2-digit", minute:"2-digit" });
+
+function longFormat(sec) {
+  const h = Math.floor(sec / 3600);
+  return (h ? h + ":" + String(Math.floor(sec % 3600 / 60)).padStart(2, "0") : Math.floor(sec / 60)) + ":" + String(sec % 60).padStart(2, "0");
+}
+
+function paintChannel(btn, c, text) {
+  if (btn._winEl.textContent !== text) btn._winEl.textContent = text;
+  const hist = (c && c.hist) || [];
+  const sig = JSON.stringify(hist);
+  if (btn._histEl.dataset.sig === sig) return;
+  btn._histEl.dataset.sig = sig;
+  btn._histEl.textContent = "";
+  hist.forEach(h => {
+    const line = document.createElement("div");
+    const d = new Date(h.t);
+    line.textContent = d.toLocaleDateString("pl-PL", { day:"2-digit", month:"2-digit" }) + " " + clockText(h.t) + " " + h.by;
+    btn._histEl.appendChild(line);
+  });
+  btn._undoEl.disabled = !hist.length;
 }
 
 /* czy ten timer jest u mnie wyciszony */
@@ -1716,6 +2031,7 @@ function tick() {
     if (!c || !c.end) {
       btn.textContent = "PUSTY";
       btn.className = "main-btn empty";
+      paintChannel(btn, c, "");
       return;
     }
 
@@ -1734,9 +2050,12 @@ function tick() {
       /* pomarańcz zapala się dokładnie wtedy, gdy odzywa się lektor */
       const alertAt = Math.max(180, state.settings.warnAt);
 
-      btn.textContent = format(remaining);
+      btn.textContent = longFormat(remaining);
       btn.className = "main-btn " +
         (remaining <= 60 ? "critical" : remaining <= alertAt ? "alert" : "cooldown");
+      paintChannel(btn, c, c.maxEnd
+        ? "Okno " + clockText(c.end) + "–" + clockText(c.maxEnd)
+        : "Resp o " + clockText(c.end));
       return;
     }
 
@@ -1748,12 +2067,22 @@ function tick() {
       dirty = true;
       if (!isMuted(row.id)) {
         gong(2);
-        speak(announcement(row, j, "end"));
+        speak(announcement(row, j, c.maxEnd ? "open" : "end"));
       }
     }
     if (!c.finishedAt) { c.finishedAt = c.end; dirty = true; }
 
-    const elapsed = Math.floor((t - c.finishedAt) / 1000);
+    if (c.maxEnd && t < c.maxEnd) {
+      btn.textContent = longFormat(Math.ceil((c.maxEnd - t) / 1000));
+      btn.className = "main-btn in-window";
+      paintChannel(btn, c, "W oknie, do " + clockText(c.maxEnd));
+      return;
+    }
+
+    const elapsed = Math.floor((t - (c.maxEnd || c.finishedAt)) / 1000);
+    paintChannel(btn, c, c.maxEnd
+      ? "Okno minęło " + longFormat(elapsed) + " temu, boss powinien stać"
+      : "Resp o " + clockText(c.end));
     if (elapsed >= UP_AFTER) {
       btn.textContent = "UP";
       btn.className = "main-btn up";
@@ -1773,8 +2102,8 @@ function tick() {
 function bindToolbar() {
   el("addRow").onclick = () => { state.rows.push(newRow()); render(); tick(); };
 
-  el("clearAll").onclick = () => {
-    if (!confirm("Wyczyścić wszystkie timery i pola?")) return;
+  el("clearAll").onclick = async () => {
+    if (!(await ask("Wyczyścić wszystkie timery i pola?"))) return;
     state.rows = [newRow(), newRow(), newRow()];
     render(); tick();
   };
@@ -1817,40 +2146,12 @@ function bindToolbar() {
     if (e.key === "Enter") { e.preventDefault(); sendChat(); }
   });
 
-  /* --- pokój --- */
-  const roomInput = el("roomInput");
-  roomInput.value = ROOM;
-
-  const goToRoom = () => {
-    const target = cleanRoom(roomInput.value) || "publiczny";
-    if (target === ROOM) return;
-    location.hash = target;
-    location.reload();          // przełączenie pokoju = świeże połączenie
-  };
-  el("roomGo").onclick = goToRoom;
-  roomInput.addEventListener("keydown", e => { if (e.key === "Enter") goToRoom(); });
-
-  el("copyLink").onclick = async (e) => {
-    const link = location.origin + location.pathname + "#" + ROOM;
-    const btn = e.currentTarget;
-    const old = btn.textContent;
-    try {
-      await navigator.clipboard.writeText(link);
-      btn.textContent = "Skopiowano!";
-    } catch (err) {
-      window.prompt("Skopiuj link i wyślij ekipie:", link);
-      btn.textContent = old;
-      return;
-    }
-    setTimeout(() => btn.textContent = old, 1600);
-  };
-
   el("testVoice").onclick = () => {
     ensureAudio();
     gong(1);
-    const r = state.rows[0] || newRow("Nefrytowy Generał", "Mroczna Świątynia");
+    const r = state.rows[0] || newRow("Żółw", "M2");
     speak(announcement(
-      { name: r.name || "Nefrytowy Generał", place: r.place || "Mroczna Świątynia" },
+      { name: r.name || "Żółw", place: r.place || "M2" },
       0, "warn"
     ));
   };
@@ -1860,34 +2161,12 @@ function bindToolbar() {
    AUTENTYKACJA
    ========================================================= */
 
-const AUTH_USER_PASS = "metin2";        // hasło dla zwykłych użytkowników
-const AUTH_ADMIN_PASS = "admin123";     // wspólne hasło admina (dowolna ksywka)
-/* indywidualne konta adminów: ksywka małymi literami → własne hasło */
-const AUTH_ADMINS = {
-  "arev": "q5NzvR6D2YsZ"
-};
-const AUTH_LS_KEY = "legendstimer_auth";
+/* konto ustawia moduł logowania na dole strony; hasła sprawdza Firebase */
+let account = null;
 
-/* Firebase (moduł niżej) czeka na ten sygnał — bez logowania nie łączy się
-   z bazą, więc nie pobiera timerów/czatu i nie zgłasza obecności w pokoju */
-window.__authReady = new Promise(resolve => { window.__authGo = resolve; });
-
+/* bez zatwierdzonego konta strona nie startuje i nie łączy się z danymi */
 function getAuth() {
-  try {
-    const s = localStorage.getItem(AUTH_LS_KEY);
-    return s ? JSON.parse(s) : null;
-  } catch { return null; }
-}
-
-function setAuth(auth) {
-  try {
-    localStorage.setItem(AUTH_LS_KEY, JSON.stringify(auth));
-  } catch {}
-}
-
-function logout() {
-  localStorage.removeItem(AUTH_LS_KEY);
-  location.reload();
+  return account ? { nick: account.gameNick, adminMode: account.staff } : null;
 }
 
 function showLoginModal() {
@@ -1913,139 +2192,202 @@ function shakeLoginBox() {
   box.classList.add("shake");
 }
 
-function showAdminPanel() {
-  document.getElementById("adminPanel").classList.remove("hidden");
-}
+window.__loginUi = { show: showLoginModal, hide: hideLoginModal, shake: shakeLoginBox };
 
-function hideAdminPanel() {
-  document.getElementById("adminPanel").classList.add("hidden");
-}
+window.__onAccount = (acc) => {
+  account = acc;
+  el("adminLink").hidden = !acc.staff;
+  initUI();
+};
 
-function updateAdminPanel() {
-  const auth = getAuth();
-  if (!auth || !auth.adminMode) return;
+/* =========================================================
+   SESJE WSPÓLNE
 
-  const list = document.getElementById("adminUsersList");
-  if (!list) return;
+   Lista (nazwa, autor) jest publiczna: rooms/__sesje/list.
+   Adres danych sesji to skrót z id i hasła, więc bez hasła
+   nie da się go ustalić. Hasła nigdzie nie zapisujemy.
+   ========================================================= */
 
-  // sprawdzenie czy Firebase jest skonfigurowany
-  const hasFirebase = window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.databaseURL;
-
-  if (!hasFirebase) {
-    list.innerHTML = "<div style='color:var(--blood-2);font-size:13px;'>⚠️ Firebase nie jest skonfigurowany. Bez Firebase widoczność online nie będzie działać.</div>";
-    return;
-  }
-
-  const peers = cloud.onlinePeers || [];
-
-  if (peers.length === 0) {
-    list.innerHTML = "<div style='color:var(--muted);font-size:13px;'>Nikt online</div>";
-    return;
-  }
-
-  list.innerHTML = peers.map(p => `
-    <div class="admin-user">
-      <div>
-        <div class="admin-user-nick">${p.nick}</div>
-        <div class="admin-user-time">SessionID: ${p.cid.slice(0, 8)}</div>
-      </div>
-      <button class="admin-kick-btn" onclick="adminKickUser('${p.nick}')">Wyrzuć</button>
-    </div>
-  `).join("");
-}
-
-function adminKickUser(nick) {
-  const auth = getAuth();
-  if (!auth || !auth.adminMode) {
-    alert("Brak uprawnień");
-    return;
-  }
-
-  if (!confirm(`Wyrzucić ${nick}?`)) return;
-
-  // dodaj nick do banned listy
-  if (cloud.setBanned) {
-    cloud.setBanned(nick, true);
-  } else {
-    alert("Firebase nie jest skonfigurowany");
-  }
-}
-
-function initAuth() {
-  const auth = getAuth();
-
-  // jeśli zalogowany — schowaj login modal
-  if (auth && auth.nick) {
-    hideLoginModal();
-    if (auth.adminMode) showAdminPanel();
-    window.__authGo();
-    return true;
-  }
-
-  // pokazuj login modal
-  showLoginModal();
-
-  const nickInput = document.getElementById("loginNick");
-  const passInput = document.getElementById("loginPass");
-  const loginBtn = document.getElementById("loginBtn");
-  const errorDiv = document.getElementById("loginError");
-  const adminToggle = document.getElementById("adminModeToggle");
-
-  loginBtn.onclick = () => {
-    const nick = nickInput.value.trim();
-    const pass = passInput.value;
-    const adminMode = adminToggle.checked;
-
-    errorDiv.textContent = "";
-
-    if (!nick) {
-      errorDiv.textContent = "Wpisz ksywkę";
-      shakeLoginBox();
-      return;
-    }
-
-    // sprawdzenie hasła
-    const own = Object.prototype.hasOwnProperty.call(AUTH_ADMINS, nick.toLowerCase())
-      ? AUTH_ADMINS[nick.toLowerCase()] : null;
-    const passOk = adminMode
-      ? (pass === AUTH_ADMIN_PASS || (own !== null && pass === own))
-      : pass === AUTH_USER_PASS;
-    if (!passOk) {
-      errorDiv.textContent = "Błędne hasło";
-      shakeLoginBox();
-      return;
-    }
-
-    // zapis sesji
-    const auth = {
-      nick: nick,
-      adminMode: adminMode,
-      loginTime: Date.now()
+/* własne okno zamiast confirm/prompt: wbudowane bywają blokowane przez przeglądarkę */
+function ask(text, withInput) {
+  const dlg = document.getElementById("askDlg");
+  const input = document.getElementById("askInput");
+  document.getElementById("askText").textContent = text;
+  input.hidden = !withInput;
+  input.value = "";
+  dlg.showModal();
+  if (withInput) input.focus();
+  return new Promise(resolve => {
+    const done = (value) => {
+      document.getElementById("askForm").onsubmit = null;
+      document.getElementById("askNo").onclick = null;
+      dlg.oncancel = null;
+      dlg.close();
+      resolve(value);
     };
-    setAuth(auth);
-    window.__authGo();
+    document.getElementById("askForm").onsubmit = (e) => { e.preventDefault(); done(withInput ? input.value : true); };
+    document.getElementById("askNo").onclick = () => done(null);
+    dlg.oncancel = (e) => { e.preventDefault(); done(null); };
+  });
+}
 
-    hideLoginModal(true);
-    if (adminMode) showAdminPanel();
+const SESSION_TTL = 3 * 3600 * 1000;
+let leavingNow = false;
+let sessionMode = "create";
+let sessionTarget = null;
 
-    // ogłoś nick reszcie ekipy (gdy Firebase dopiero się łączy,
-    // zrobi to za nas handler .info/connected)
-    if (cloud.announceNick) cloud.announceNick(auth.nick);
+async function sessionKey(id, pass) {
+  const data = new TextEncoder().encode(id + ":" + pass);
+  const hash = await crypto.subtle.digest("SHA-256", data);
+  const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+  return "s-" + hex.slice(0, 32);
+}
 
-    initUI();  // restartuj interfejs
+function sessionAlive(s) { return !!s.keep || now() - (Number(s.at) || 0) < SESSION_TTL; }
+
+function enterRoom(room) {
+  location.hash = room;
+  location.reload();
+}
+
+function canDeleteSession(s) {
+  const auth = getAuth();
+  return !!(auth && (auth.adminMode || String(s.by).toLowerCase() === myNick().toLowerCase()));
+}
+
+function renderSessions() {
+  const box = el("sessList");
+  if (!box) return;
+  if (IN_SESSION && cloud.sessionId) {
+    const cur = cloud.sessions[cloud.sessionId];
+    el("sessKeep").hidden = !cur;
+    el("sessKeep").textContent = "Auto-odświeżanie: " + (cur && cur.keep ? "wł." : "wył.");
+  }
+  const list = Object.entries(cloud.sessions || {})
+    .map(([id, s]) => ({ id, ...s }))
+    .filter(s => {
+      if (!s.name) return false;
+      if (!cloud.clockOk || sessionAlive(s)) return true;
+      if (cloud.deleteSession) cloud.deleteSession(s.id);     // serwera nie mamy, sprząta pierwszy klient
+      return false;
+    })
+    .sort((a, b) => (Number(b.at) || 0) - (Number(a.at) || 0));
+
+  box.textContent = "";
+  if (!list.length) {
+    const empty = document.createElement("div");
+    empty.className = "sess-empty";
+    empty.textContent = "Brak aktywnych sesji. Utwórz pierwszą.";
+    box.appendChild(empty);
+    return;
+  }
+
+  list.forEach(s => {
+    const here = cloud.sessionId === s.id;
+    const item = document.createElement("div");
+    item.className = "sess-item" + (here ? " on" : "");
+
+    const info = document.createElement("div");
+    info.className = "sess-info";
+    const name = document.createElement("b");
+    name.textContent = s.name;
+    const by = document.createElement("small");
+    by.textContent = "Założył(a): " + (s.by || "?") + (s.keep ? " · stała" : "");
+    info.append(name, by);
+    item.appendChild(info);
+
+    if (!here) {
+      const join = document.createElement("button");
+      join.className = "btn";
+      join.textContent = "Wejdź";
+      join.onclick = () => openSessionDialog("join", s);
+      item.appendChild(join);
+    }
+    if (canDeleteSession(s)) {
+      const del = document.createElement("button");
+      del.className = "sess-del";
+      del.title = "Usuń z listy";
+      del.setAttribute("aria-label", "Usuń sesję " + s.name);
+      del.textContent = "✕";
+      del.onclick = async () => {
+        if (await ask("Usunąć sesję „" + s.name + "” z listy?")) cloud.deleteSession(s.id);
+      };
+      item.appendChild(del);
+    }
+    box.appendChild(item);
+  });
+}
+
+function openSessionDialog(mode, target) {
+  sessionMode = mode;
+  sessionTarget = target || null;
+  const creating = mode === "create";
+  el("sessDlgTitle").textContent = creating ? "Nowa sesja" : "Wejście: " + target.name;
+  el("sessSubmit").textContent = creating ? "Utwórz" : "Wejdź";
+  el("sessName").hidden = !creating;
+  el("sessName").value = "";
+  el("sessPass").value = "";
+  el("sessErr").textContent = "";
+  el("sessDlg").showModal();
+  el(creating ? "sessName" : "sessPass").focus();
+}
+
+async function submitSession() {
+  const err = el("sessErr");
+  const pass = el("sessPass").value;
+  err.textContent = "";
+  if (!cloud.createSession) { err.textContent = "Brak połączenia z bazą. Spróbuj za chwilę."; return; }
+
+  try {
+    if (sessionMode === "create") {
+      const name = cleanNick(el("sessName").value).slice(0, 30);
+      if (!name) { err.textContent = "Wpisz nazwę sesji."; return; }
+      if (pass.length < 6) { err.textContent = "Hasło musi mieć co najmniej 6 znaków."; return; }
+      const id = "x" + Array.from(crypto.getRandomValues(new Uint8Array(8)))
+        .map(b => b.toString(16).padStart(2, "0")).join("");
+      const key = await sessionKey(id, pass);
+      const rows = [newRow()].map(r => ({
+        id: r.id, name: "", place: "", minutes: "",
+        ch: r.ch.map(() => ({ end: 0, finishedAt: 0, by: "" }))
+      }));
+      await cloud.createSession({ id, key, name, by: myNick(), at: now(), rows });
+      enterRoom(key);
+    } else {
+      const key = await sessionKey(sessionTarget.id, pass);
+      if (await cloud.sessionExists(key)) enterRoom(key);
+      else err.textContent = "Błędne hasło.";
+    }
+  } catch (e) {
+    err.textContent = "Nie udało się. Spróbuj ponownie.";
+    console.error("[sesje]", e);
+  }
+}
+
+function bindSessions() {
+  el("sessCreate").onclick = () => openSessionDialog("create");
+  el("sessCancel").onclick = () => el("sessDlg").close();
+  el("sessForm").addEventListener("submit", e => { e.preventDefault(); submitSession(); });
+  el("sessLeave").onclick = () => enterRoom("");
+  el("sessDelete").onclick = async () => {
+    if (!(await ask("Usunąć sesję „" + cloud.sessionName + "” razem z jej timerami i czatem? Tego nie da się cofnąć."))) return;
+    leavingNow = true;
+    try {
+      await cloud.removeSession(cloud.sessionId, ROOM);
+      enterRoom("");
+    } catch (e) {
+      leavingNow = false;
+      alert("Nie udało się usunąć sesji. Spróbuj ponownie.");
+    }
+  };
+  el("sessKeep").onclick = () => {
+    const cur = cloud.sessions[cloud.sessionId];
+    if (cur && cloud.setSessionKeep) cloud.setSessionKeep(cloud.sessionId, !cur.keep);
   };
 
-  passInput.addEventListener("keydown", e => {
-    if (e.key === "Enter") loginBtn.click();
-  });
+  if (IN_SESSION) el("sessLeave").hidden = false;
+  else el("chat").style.display = "none";       // czat żyje tylko w sesji
 
-  // admin logout button
-  const adminLogoutBtn = document.getElementById("adminLogoutBtn");
-  if (adminLogoutBtn) {
-    adminLogoutBtn.onclick = logout;
-  }
-
-  return false;
+  setInterval(renderSessions, 60000);
 }
 
 /* =========================================================
@@ -2055,28 +2397,21 @@ function initAuth() {
 function initUI() {
   if (!load()) {
     state.rows = [
-      newRow("Nefrytowy Generał", "Mroczna Świątynia", 30),
-      newRow("Razador", "Twierdza Razadora", 60),
-      newRow("Nemere", "Wieża Nemere", 45)
+      newRow("Żółw", "M2"),
+      newRow("Ogonki", "Ognista")
     ];
   }
 
   bindToolbar();
+  bindSessions();
 
   /* Firebase łączy się niezależnie od logowania — jeśli zdążył, nie cofaj
      plakietki na „Łączenie…", tylko odśwież ją aktualnym stanem */
-  const hasDb = !!(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.databaseURL);
-  cloud.status(cloud.state === "online" ? "online" : (hasDb ? "connecting" : "local"));
+  cloud.status(cloud.state === "online" ? "online" : (IN_SESSION ? "connecting" : "local"));
   render();
   renderChat();
   tick();
   setInterval(tick, 250);
-}
-
-// inicjuj auth
-const isLoggedIn = initAuth();
-if (isLoggedIn) {
-  initUI();
 }
 
 if ("speechSynthesis" in window) {
@@ -2093,92 +2428,142 @@ if ("speechSynthesis" in window) {
 /* ostrzeżenie przed zamknięciem, gdy coś tyka */
 window.addEventListener("beforeunload", (e) => {
   const running = state.rows.some(r => r.ch.some(c => c.end && c.end > now()));
-  if (running) { e.preventDefault(); e.returnValue = ""; }
+  if (running && !leavingNow) { e.preventDefault(); e.returnValue = ""; }
 });
 </script>
 
-<!-- =========================================================
-     PODŁĄCZENIE DO FIREBASE
-     Uruchamia się tylko wtedy, gdy u góry pliku wpisano
-     databaseURL. Bez tego strona po prostu działa lokalnie.
-     ========================================================= -->
+<!-- logowanie i synchronizacja -->
 <script type="module">
+import {
+  db, ref, onValue, get, set, remove, serverTimestamp, onDisconnect, push, query, limitToLast,
+  watchAccount, register, signIn, logOut, startPresence, isStaff,
+  cleanLogin, validLogin, cleanGameNick, errorText
+} from "./legends-core.js";
+
 const cloud = window.__cloud;
-const cfg   = window.FIREBASE_CONFIG || {};
+const ui = window.__loginUi;
+const $ = (id) => document.getElementById(id);
 
-if (!cfg.databaseURL) {
-  cloud.status("local");
-} else {
-  await window.__authReady;      // dopiero po zalogowaniu
+let mode = "login";
+function setMode(next) {
+  mode = next;
+  const reg = next === "register";
+  $("tabLogin").classList.toggle("on", !reg);
+  $("tabRegister").classList.toggle("on", reg);
+  $("loginGame").hidden = !reg;
+  $("loginGame").required = reg;
+  $("loginBtn").textContent = reg ? "Zarejestruj" : "Zaloguj";
+  $("loginPass").autocomplete = reg ? "new-password" : "current-password";
+  $("loginError").textContent = "";
+}
+$("tabLogin").onclick = () => setMode("login");
+$("tabRegister").onclick = () => setMode("register");
+
+$("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const login = cleanLogin($("loginName").value);
+  const password = $("loginPass").value;
+  const fail = (msg) => { $("loginError").textContent = msg; ui.shake(); };
+  if (!validLogin(login)) return fail("Login: 3–20 znaków, litery, cyfry, - i _.");
+  $("loginBtn").disabled = true;
   try {
-    const { initializeApp } =
-      await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
-    const { getDatabase, ref, onValue, set, onDisconnect, push, query, limitToLast } =
-      await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js");
-
-    const db   = getDatabase(initializeApp(cfg));
-    const base = "rooms/" + cloud.room;
-
-    const rowsRef = ref(db, base + "/rows");
-    const meRef   = ref(db, base + "/presence/" + cloud.cid);
-    const allRef  = ref(db, base + "/presence");
-    const chatRef = ref(db, base + "/chat");
-    const bannedRef = ref(db, base + "/banned");
-
-    /* różnica między zegarem serwera a zegarem tego komputera */
-    onValue(ref(db, ".info/serverTimeOffset"), s => cloud.setOffset(Number(s.val()) || 0));
-
-    /* stan połączenia + obecność (wpis znika sam po zamknięciu karty) */
-    onValue(ref(db, ".info/connected"), s => {
-      if (!s.val()) { cloud.status("connecting"); return; }
-      onDisconnect(meRef).remove();
-      set(meRef, { n: cloud.nick() });
-      cloud.status("online");
-    });
-
-    /* zmiana ksywki od razu widoczna dla reszty */
-    cloud.announceNick = (nick) => set(meRef, { n: nick }).catch(() => {});
-
-    onValue(allRef, s => cloud.setPeers(s.val()));
-
-    /* timery — źródło prawdy dla całej ekipy */
-    onValue(rowsRef, s => cloud.incoming(s.val()),
-            err => cloud.status("error", err.message));
-
-    cloud.push = (payload) =>
-      set(rowsRef, payload).catch(err => cloud.status("error", err.message));
-
-    /* czat — pokazujemy ostatnie 120 wiadomości */
-    onValue(query(chatRef, limitToLast(120)), s => cloud.chatIncoming(s.val()),
-            err => cloud.status("error", err.message));
-
-    cloud.sendChat = (msg) =>
-      push(chatRef, msg).catch(err => cloud.status("error", err.message));
-
-    /* admin ban/unban */
-    cloud.setBanned = (nick, banned) => {
-      const bannedNickRef = ref(db, base + "/banned/" + nick);
-      if (banned) {
-        set(bannedNickRef, true).catch(() => {});
-      } else {
-        set(bannedNickRef, null).catch(() => {});
-      }
-    };
-
-    /* monitoruj banned listę - jeśli bieżący user jest zbanowany, wyloguj go */
-    onValue(bannedRef, s => {
-      const banned = s.val() || {};
-      const auth = window.getAuth ? window.getAuth() : null;
-      if (auth && auth.nick && banned[auth.nick]) {
-        alert("Zostałeś wyrzucony z serwera!");
-        if (window.logout) window.logout();
-      }
-    });
-
+    if (mode === "register") {
+      const gameNick = cleanGameNick($("loginGame").value);
+      if (!gameNick) return fail("Wpisz nick z gry.");
+      await register({ login, password, gameNick });
+    } else {
+      await signIn(login, password);
+    }
   } catch (err) {
-    cloud.status("error", err && err.message);
-    console.error("[sync]", err);
+    fail(errorText(err));
+  } finally {
+    $("loginBtn").disabled = false;
   }
+});
+
+$("loginOut").onclick = () => logOut();
+$("logoutBtn").onclick = async () => { await logOut(); location.reload(); };
+
+const WAIT = {
+  pending: "Konto czeka na weryfikację administratora. Strona otworzy się sama po akceptacji.",
+  banned:  "Twoje konto zostało zablokowane przez administratora.",
+  deleted: "To konto zostało usunięte. Skontaktuj się z administratorem."
+};
+
+let started = false;
+watchAccount((acc) => {
+  if (acc.state === "approved") {
+    if (started) return;
+    started = true;
+    ui.hide(true);
+    startApp(acc);
+    return;
+  }
+  if (started) { location.reload(); return; }
+  ui.show();
+  const waiting = acc.state !== "guest";
+  $("loginFormBox").hidden = waiting;
+  $("loginWait").hidden = !waiting;
+  if (waiting) $("loginWaitText").textContent = WAIT[acc.state] || WAIT.deleted;
+});
+
+function startApp(acc) {
+  window.__onAccount({ uid: acc.uid, gameNick: acc.profile.gameNick, staff: isStaff(acc.profile) });
+  startPresence(acc.uid, acc.profile.gameNick);
+
+  const inSession = /^s-[0-9a-f]{32}$/.test(cloud.room);
+  const base = "rooms/" + cloud.room;
+
+  /* różnica między zegarem serwera a zegarem tego komputera */
+  onValue(ref(db, ".info/serverTimeOffset"), s => cloud.setOffset(Number(s.val()) || 0));
+
+  /* sesje wspólne */
+  const sessionRef = (id) => ref(db, "rooms/__sesje/list/" + id);
+  onValue(ref(db, "rooms/__sesje/list"), s => cloud.sessionsIncoming(s.val()));
+
+  cloud.createSession = async ({ id, key, name, by, at, rows }) => {
+    await set(ref(db, "rooms/" + key + "/meta"), { id, name, by, at });
+    await set(ref(db, "rooms/" + key + "/rows"), rows);
+    await set(sessionRef(id), { name, by, at });
+  };
+  cloud.sessionExists = async (key) => (await get(ref(db, "rooms/" + key + "/meta"))).exists();
+  cloud.deleteSession = (id) => remove(sessionRef(id)).catch(() => {});
+  cloud.removeSession = async (id, key) => {
+    await remove(sessionRef(id));
+    await remove(ref(db, "rooms/" + key));
+  };
+  cloud.setSessionKeep = (id, keep) => set(ref(db, "rooms/__sesje/list/" + id + "/keep"), keep || null).catch(() => {});
+  cloud.touchSession = (id) => set(ref(db, "rooms/__sesje/list/" + id + "/at"), serverTimestamp()).catch(() => {});
+
+  if (!inSession) return;
+
+  const rowsRef = ref(db, base + "/rows");
+  const meRef   = ref(db, base + "/presence/" + cloud.cid);
+  const chatRef = ref(db, base + "/chat");
+
+  onValue(ref(db, base + "/meta"), s => cloud.sessionMeta(s.val()));
+  setInterval(() => cloud.beat(), 5 * 60 * 1000);
+
+  /* stan połączenia + obecność w sesji */
+  onValue(ref(db, ".info/connected"), s => {
+    if (!s.val()) { cloud.status("connecting"); return; }
+    onDisconnect(meRef).remove();
+    set(meRef, { n: cloud.nick() });
+    cloud.status("online");
+  });
+  onValue(ref(db, base + "/presence"), s => cloud.setPeers(s.val()));
+
+  /* timery — źródło prawdy dla całej ekipy */
+  cloud.push = (payload) =>
+    set(rowsRef, payload).catch(err => cloud.status("error", err.message));
+  onValue(rowsRef, s => cloud.incoming(s.val()),
+          err => cloud.status("error", err.message));
+
+  /* czat — pokazujemy ostatnie 120 wiadomości */
+  onValue(query(chatRef, limitToLast(120)), s => cloud.chatIncoming(s.val()),
+          err => cloud.status("error", err.message));
+  cloud.sendChat = (msg) =>
+    push(chatRef, msg).catch(err => cloud.status("error", err.message));
 }
 </script>
 

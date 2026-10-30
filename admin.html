@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Legends — Panel administratora</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='2' width='60' height='60' rx='14' fill='%23120d07' stroke='%23d9b45b' stroke-width='4'/%3E%3Cpath d='M23 13h10v29h18v9H23z' fill='%23f2d98a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --panel:#150f08; --panel-2:#241a0e; --line:#4a3618;
+  --gold:#d9b45b; --gold-2:#f5e2a6; --ink:#080603;
+  --blood:#7a1414; --blood-2:#b52020; --jade:#2f8f4a; --jade-2:#56d97a;
+  --parch:#ead9b4; --muted:#9c8a68;
+}
+*{ box-sizing:border-box; }
+body{
+  margin:0; min-height:100vh; padding:24px 16px 70px; color:var(--parch); font:14px/1.5 'Inter', Arial, sans-serif;
+  background:radial-gradient(1000px 500px at 50% -10%, rgba(181,32,32,.16), transparent 60%), linear-gradient(180deg,#0d0a05,#050403 70%);
+  background-attachment:fixed;
+}
+a{ color:inherit; text-decoration:none; }
+button{ font:inherit; color:inherit; cursor:pointer; }
+:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+.wrap{ max-width:1050px; margin:0 auto; }
+.top{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:20px; }
+h1{ margin:0; font:900 clamp(22px,4vw,32px) 'Cinzel',Georgia,serif; letter-spacing:.05em; color:var(--gold-2); }
+.top p{ margin:4px 0 0; color:var(--muted); }
+.links{ display:flex; gap:8px; flex-wrap:wrap; }
+.tabs{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
+.tab{ padding:9px 16px; border:1px solid var(--line); border-radius:9px; background:rgba(0,0,0,.3); color:var(--muted); font-weight:600; }
+.tab.on{ border-color:var(--gold); color:var(--gold-2); background:rgba(217,180,91,.12); }
+.badge{ margin-left:6px; padding:0 7px; border-radius:99px; background:var(--blood-2); color:#fff; font-size:11px; font-weight:700; }
+.card{ padding:18px 20px; margin-bottom:14px; border:1px solid var(--line); border-radius:14px; background:linear-gradient(180deg,rgba(40,29,15,.85),rgba(21,15,8,.92)); }
+.card h2{ margin:0 0 12px; font-size:15px; color:var(--gold-2); }
+.u{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:11px 0; border-top:1px solid rgba(74,54,24,.6); }
+.u:first-of-type{ border-top:0; }
+.u-info{ flex:1; min-width:180px; }
+.u-info b{ display:block; }
+.u-info small{ color:var(--muted); font-size:12px; }
+.dot{ width:9px; height:9px; border-radius:50%; background:#3a3126; flex:0 0 auto; }
+.dot.on{ background:var(--jade-2); box-shadow:0 0 8px var(--jade-2); }
+.pill{ padding:1px 9px; border-radius:99px; border:1px solid var(--line); color:var(--muted); font-size:11px; font-weight:700; }
+.pill.owner{ color:var(--gold-2); border-color:var(--gold); }
+.pill.admin{ color:#ffb0b0; border-color:var(--blood-2); }
+.pill.banned{ color:#fff; background:var(--blood); border-color:var(--blood-2); }
+.acts{ display:flex; gap:6px; flex-wrap:wrap; }
+.btn{ padding:7px 12px; border-radius:8px; border:1px solid var(--line); background:rgba(0,0,0,.3); font-weight:600; font-size:12.5px; }
+.btn:hover{ border-color:var(--gold); }
+.btn.gold{ border-color:transparent; background:linear-gradient(180deg,var(--gold-2),var(--gold) 60%,#b8933f); color:var(--ink); font-weight:700; }
+.btn.red{ border-color:var(--blood-2); color:#ffb0b0; }
+.empty{ padding:20px; text-align:center; color:var(--muted); }
+form{ display:grid; gap:12px; }
+label{ display:grid; gap:6px; font-size:12px; color:var(--muted); }
+input, select, textarea{ width:100%; padding:10px 12px; border-radius:9px; border:1px solid var(--line); background:var(--panel); color:var(--parch); font:14px 'Inter',Arial,sans-serif; resize:vertical; }
+.msg{ padding:11px 0; border-top:1px solid rgba(74,54,24,.6); }
+.msg:first-of-type{ border-top:0; }
+.msg-h{ display:flex; justify-content:space-between; gap:10px; }
+.msg b{ color:var(--gold-2); }
+.msg p{ margin:4px 0; white-space:pre-wrap; overflow-wrap:anywhere; }
+.msg small{ color:var(--muted); font-size:12px; }
+.search{ margin-bottom:10px; }
+.gate{ display:grid; place-items:center; min-height:80vh; text-align:center; }
+#askDlg{ width:min(360px,calc(100% - 32px)); padding:22px; color:var(--parch); background:var(--panel-2); border:2px solid var(--gold); border-radius:12px; }
+#askDlg::backdrop{ background:rgba(0,0,0,.75); }
+#askDlg p{ margin:0 0 14px; }
+.ask-btns{ display:flex; justify-content:flex-end; gap:8px; }
+#toast{ position:fixed; left:50%; bottom:24px; z-index:9; max-width:calc(100% - 32px); transform:translate(-50%,20px); opacity:0; pointer-events:none; padding:10px 16px; border-radius:10px; border:1px solid var(--gold); background:#1d1408; color:var(--gold-2); transition:.3s; }
+#toast.on{ transform:translate(-50%,0); opacity:1; }
+</style>
+</head>
+<body>
+<div class="wrap" id="root"><div class="gate"><p>Ładowanie…</p></div></div>
+<dialog id="askDlg">
+  <form id="askForm" method="dialog">
+    <p id="askText"></p>
+    <div class="ask-btns">
+      <button type="button" class="btn" id="askNo">Anuluj</button>
+      <button type="submit" class="btn gold">OK</button>
+    </div>
+  </form>
+</dialog>
+<div id="toast" role="status"></div>
+
+<script type="module">
+import {
+  db, ref, onValue, set, update, remove, push, serverTimestamp,
+  firstAccount, startPresence, isStaff, logOut
+} from "./legends-core.js";
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const when = ts => ts ? new Date(ts).toLocaleString("pl-PL", { day:"numeric", month:"long", hour:"2-digit", minute:"2-digit" }) : "";
+
+function toast(msg){
+  const t = $("#toast"); t.textContent = msg; t.classList.add("on");
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("on"), 2600);
+}
+const failed = () => toast("Brak uprawnień albo błąd zapisu.");
+
+function ask(text){
+  const dlg = $("#askDlg");
+  $("#askText").textContent = text;
+  dlg.showModal();
+  return new Promise(resolve => {
+    const done = v => { $("#askForm").onsubmit = null; $("#askNo").onclick = null; dlg.oncancel = null; dlg.close(); resolve(v); };
+    $("#askForm").onsubmit = e => { e.preventDefault(); done(true); };
+    $("#askNo").onclick = () => done(false);
+    dlg.oncancel = e => { e.preventDefault(); done(false); };
+  });
+}
+
+const me = await firstAccount();
+if (me.state !== "approved" || !isStaff(me.profile)) {
+  $("#root").innerHTML = `<div class="gate"><div class="card"><h2>Brak dostępu</h2><p>Ta strona jest tylko dla administratorów.</p><a class="btn gold" href="index.html">Wróć do timera</a></div></div>`;
+  throw new Error("brak uprawnien");
+}
+
+const OWNER = me.profile.role === "owner";
+startPresence(me.uid, me.profile.gameNick);
+
+let users = {}, online = {}, messages = {}, direct = {};
+let tab = "zgloszenia", filter = "";
+
+onValue(ref(db, "users"),          s => { users = s.val() || {}; refresh(); });
+onValue(ref(db, "presence"),       s => { online = s.val() || {}; refresh(); });
+onValue(ref(db, "panel/messages"), s => { messages = s.val() || {}; refresh(); });
+onValue(ref(db, "panel/direct"),   s => { direct = s.val() || {}; refresh(); }, () => {});
+
+const list = () => Object.entries(users).map(([uid, u]) => ({ uid, ...u }));
+const roleName = { owner:"Właściciel", admin:"Admin", user:"Gracz" };
+
+function vZgloszenia(){
+  const items = list().filter(u => u.status === "pending").sort((a,b) => a.createdAt - b.createdAt);
+  return `<section class="card"><h2>Zgłoszenia do weryfikacji</h2>${items.length ? items.map(u => `
+    <div class="u"><div class="u-info"><b>${esc(u.gameNick)}</b><small>login: ${esc(u.login)} · ${esc(when(u.createdAt))}</small></div>
+      <div class="acts"><button class="btn gold" data-act="approve" data-id="${esc(u.uid)}">Akceptuj</button>
+      <button class="btn red" data-act="reject" data-id="${esc(u.uid)}">Odrzuć</button></div></div>`).join("")
+    : `<div class="empty">Brak nowych zgłoszeń.</div>`}</section>`;
+}
+
+function userActions(u){
+  if (u.uid === me.uid || u.role === "owner") return "";
+  if (u.role === "admin" && !OWNER) return "";
+  const b = [];
+  if (OWNER) b.push(`<button class="btn" data-act="role" data-id="${esc(u.uid)}">${u.role === "admin" ? "Odbierz admina" : "Nadaj admina"}</button>`);
+  b.push(`<button class="btn" data-act="ban" data-id="${esc(u.uid)}">${u.status === "banned" ? "Odblokuj" : "Wyrzuć z timera"}</button>`);
+  b.push(`<button class="btn red" data-act="del" data-id="${esc(u.uid)}">Usuń z bazy</button>`);
+  return `<div class="acts">${b.join("")}</div>`;
+}
+
+function vGracze(){
+  const q = filter.toLowerCase();
+  const items = list().filter(u => u.status !== "pending")
+    .filter(u => !q || u.gameNick.toLowerCase().includes(q) || u.login.toLowerCase().includes(q))
+    .sort((a,b) => (online[b.uid] ? 1 : 0) - (online[a.uid] ? 1 : 0) || a.gameNick.localeCompare(b.gameNick));
+  const n = Object.keys(online).length;
+  return `<section class="card"><h2>Gracze · online: ${n}</h2>
+    <input class="search" id="search" placeholder="Szukaj gracza" aria-label="Szukaj gracza" value="${esc(filter)}">
+    <div id="userRows">${items.length ? items.map(u => `
+    <div class="u"><i class="dot${online[u.uid] ? " on" : ""}" title="${online[u.uid] ? "Online" : "Offline"}"></i>
+      <div class="u-info"><b>${esc(u.gameNick)}</b><small>login: ${esc(u.login)}</small></div>
+      <span class="pill ${esc(u.role)}">${roleName[u.role] || "Gracz"}</span>
+      ${u.status === "banned" ? `<span class="pill banned">Wyrzucony</span>` : ""}
+      ${userActions(u)}</div>`).join("") : `<div class="empty">Brak graczy.</div>`}</div></section>`;
+}
+
+function vWiadomosci(){
+  const opts = list().filter(u => u.status === "approved").sort((a,b) => a.gameNick.localeCompare(b.gameNick))
+    .map(u => `<option value="${esc(u.uid)}">${esc(u.gameNick)}</option>`).join("");
+  const sent = [
+    ...Object.entries(messages).map(([id, m]) => ({ id, ...m, to:"Wszyscy" })),
+    ...Object.entries(direct).flatMap(([uid, box]) => Object.entries(box || {}).map(([id, m]) =>
+      ({ id, uid, ...m, to:(users[uid] && users[uid].gameNick) || "Usunięty gracz" })))
+  ].sort((a,b) => b.at - a.at);
+  return `<section class="card"><h2>Nowa wiadomość</h2>
+    <form id="msgForm"><label>Do<select name="to"><option value="">Wszyscy gracze</option>${opts}</select></label>
+      <label>Temat<input name="title" required maxlength="80"></label>
+      <label>Treść<textarea name="body" rows="4" required maxlength="1000"></textarea></label>
+      <button class="btn gold" type="submit">Wyślij</button></form></section>
+    <section class="card"><h2>Wysłane</h2>${sent.length ? sent.map(m => `<article class="msg"><div class="msg-h"><b>${esc(m.title)}</b>
+      <button class="btn red" data-act="delm" data-id="${esc(m.id)}" data-uid="${esc(m.uid || "")}">Usuń</button></div>
+      <p>${esc(m.body)}</p><small>Do: ${esc(m.to)} · ${esc(m.by)} · ${esc(when(m.at))}</small></article>`).join("") : `<div class="empty">Nic jeszcze nie wysłano.</div>`}</section>`;
+}
+
+const VIEWS = { zgloszenia:vZgloszenia, gracze:vGracze, wiadomosci:vWiadomosci };
+
+function render(){
+  const pending = list().filter(u => u.status === "pending").length;
+  $("#root").innerHTML = `
+  <header class="top"><div><h1>Panel administratora</h1><p>${esc(me.profile.gameNick)} · ${roleName[me.profile.role]}</p></div>
+    <div class="links"><a class="btn" href="index.html">Timer</a><a class="btn" href="panel.html">Panel gracza</a><button class="btn" data-act="out">Wyloguj</button></div></header>
+  <nav class="tabs" aria-label="Sekcje panelu">
+    <button class="tab${tab==="zgloszenia"?" on":""}" data-act="tab" data-id="zgloszenia">Zgłoszenia${pending?`<span class="badge">${pending}</span>`:""}</button>
+    <button class="tab${tab==="gracze"?" on":""}" data-act="tab" data-id="gracze">Gracze</button>
+    <button class="tab${tab==="wiadomosci"?" on":""}" data-act="tab" data-id="wiadomosci">Wiadomości</button>
+  </nav>
+  <main>${VIEWS[tab]()}</main>`;
+  const s = $("#search");
+  if (s) s.oninput = () => { filter = s.value; const p = s.selectionStart; render(); const n = $("#search"); n.focus(); n.setSelectionRange(p, p); };
+}
+
+/* odświeżenie danych nie może skasować pisanej wiadomości */
+function refresh(){
+  const a = document.activeElement;
+  if (a && a.closest("form")) return;
+  render();
+}
+
+async function deleteUser(uid){
+  await remove(ref(db, "users/" + uid));
+  await remove(ref(db, "presence/" + uid)).catch(() => {});
+  await remove(ref(db, "panel/misje/" + uid)).catch(() => {});
+  await remove(ref(db, "panel/direct/" + uid)).catch(() => {});
+}
+
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-act]"); if (!t) return;
+  const { act, id, uid } = t.dataset;
+  const u = users[id];
+  if (act === "tab") { tab = id; render(); }
+  if (act === "out") { await logOut(); location.href = "index.html"; }
+  if (act === "approve") update(ref(db, "users/" + id), { status:"approved" }).then(() => toast("Zaakceptowano")).catch(failed);
+  if (act === "reject" && await ask("Odrzucić zgłoszenie " + u.gameNick + "?")) deleteUser(id).then(() => toast("Odrzucono")).catch(failed);
+  if (act === "ban") {
+    const banned = u.status === "banned";
+    if (banned || await ask("Wyrzucić " + u.gameNick + " z timera? Straci dostęp od razu.")) {
+      update(ref(db, "users/" + id), { status: banned ? "approved" : "banned" }).catch(failed);
+      if (!banned) remove(ref(db, "presence/" + id)).catch(() => {});
+    }
+  }
+  if (act === "del" && await ask("Usunąć " + u.gameNick + " z bazy razem z misjami i wiadomościami? Tego nie da się cofnąć.")) deleteUser(id).then(() => toast("Usunięto")).catch(failed);
+  if (act === "role") update(ref(db, "users/" + id), { role: u.role === "admin" ? "user" : "admin" }).catch(failed);
+  if (act === "delm" && await ask("Usunąć tę wiadomość?")) remove(ref(db, uid ? "panel/direct/" + uid + "/" + id : "panel/messages/" + id)).catch(failed);
+});
+
+document.addEventListener("submit", e => {
+  if (e.target.id !== "msgForm") return;
+  e.preventDefault();
+  const fd = new FormData(e.target), get = k => String(fd.get(k) || "").trim();
+  const to = get("to"), title = get("title").slice(0,80), body = get("body").slice(0,1000);
+  if (!title || !body) return;
+  push(ref(db, to ? "panel/direct/" + to : "panel/messages"), { title, body, by:me.profile.gameNick, at:serverTimestamp() })
+    .then(() => { document.activeElement.blur(); e.target.reset(); render(); toast("Wysłano"); }).catch(failed);
+});
+
+render();
+</script>
+</body>
+</html>

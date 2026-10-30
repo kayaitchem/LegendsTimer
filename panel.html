@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Legends — Panel Gracza</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='2' width='60' height='60' rx='14' fill='%23120d07' stroke='%23d9b45b' stroke-width='4'/%3E%3Cpath d='M23 13h10v29h18v9H23z' fill='%23f2d98a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --ink:#080603; --panel:#150f08; --panel-2:#241a0e; --line:#4a3618;
+  --gold:#d9b45b; --gold-2:#f5e2a6; --gold-dim:#8d7333;
+  --blood:#7a1414; --blood-2:#b52020;
+  --jade:#2f8f4a; --jade-2:#56d97a; --sky:#1f5fa8; --sky-2:#4fa8ff;
+  --parch:#ead9b4; --muted:#9c8a68;
+  --side:250px;
+}
+*{ box-sizing:border-box; }
+html,body{ min-height:100%; }
+body{
+  margin:0; color:var(--parch); font:14px/1.5 'Inter', Arial, sans-serif;
+  background:
+    radial-gradient(1200px 600px at 60% -10%, rgba(217,180,91,.09), transparent 60%),
+    radial-gradient(900px 500px at 0% 110%, rgba(122,20,20,.16), transparent 60%),
+    linear-gradient(180deg,#0d0a05,#050403 70%);
+  background-attachment:fixed;
+}
+a{ color:inherit; text-decoration:none; }
+button{ font:inherit; color:inherit; cursor:pointer; }
+:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+.ic{ flex:0 0 auto; }
+.muted{ color:var(--muted); }
+
+/* ---------- menu ---------- */
+.side{
+  position:fixed; inset:0 auto 0 0; width:var(--side); z-index:50;
+  display:flex; flex-direction:column; padding:20px 14px;
+  background:rgba(9,6,3,.92); border-right:1px solid var(--line);
+  transition:transform .3s ease;
+}
+.brand{ display:flex; flex-direction:column; align-items:center; gap:8px; padding:4px 0 20px; }
+.brand svg{ width:62px; height:62px; filter:drop-shadow(0 0 14px rgba(217,180,91,.4)); }
+.brand b{ font-family:'Cinzel',Georgia,serif; letter-spacing:.22em; color:var(--gold-2); font-size:18px; }
+.brand small{ color:var(--muted); letter-spacing:.3em; font-size:10px; text-transform:uppercase; }
+.nav-i{
+  position:relative; display:flex; align-items:center; gap:12px;
+  padding:11px 14px; margin:2px 0; border-radius:9px;
+  color:var(--muted); font-weight:500; transition:background .2s, color .2s;
+}
+.nav-i:hover{ background:rgba(217,180,91,.07); color:var(--parch); }
+.nav-i.on{ background:linear-gradient(90deg,rgba(217,180,91,.2),rgba(217,180,91,.04)); color:var(--gold-2); }
+.badge{
+  margin-left:auto; min-width:20px; padding:1px 6px; border-radius:999px;
+  background:var(--blood-2); color:#fff; font-size:11px; font-weight:700; text-align:center;
+}
+.side-foot{ margin-top:auto; display:grid; gap:8px; }
+.side-link{
+  display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:9px;
+  border:1px solid var(--line); color:var(--parch); font-weight:600; font-size:13px;
+}
+.side-link:hover{ border-color:var(--gold); background:rgba(217,180,91,.08); }
+.side-link.back{ border-color:transparent; color:var(--muted); font-weight:500; background:none; width:100%; }
+.scrim{ display:none; }
+
+/* ---------- układ ---------- */
+.main{ margin-left:var(--side); padding:26px 32px 80px; max-width:calc(1240px + var(--side)); }
+.top{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:22px; }
+.top-l{ display:flex; gap:12px; align-items:flex-start; min-width:0; }
+.top h1{
+  margin:0; font-family:'Cinzel',Georgia,serif; font-weight:900; letter-spacing:.06em;
+  font-size:clamp(24px,4vw,34px); color:var(--gold-2);
+  text-shadow:0 0 18px rgba(217,180,91,.3), 0 3px 0 #2a1d0a;
+}
+.top p{ margin:6px 0 0; color:var(--muted); }
+.menu-btn{
+  display:none; place-items:center; width:40px; height:40px; flex:0 0 auto;
+  border:1px solid var(--line); border-radius:10px; background:rgba(0,0,0,.35);
+}
+.user{ display:flex; align-items:center; gap:10px; padding:5px 14px 5px 5px; border:1px solid var(--line); border-radius:999px; background:rgba(0,0,0,.3); }
+.user b{ display:block; font-size:13px; line-height:1.15; }
+.user small{ color:var(--muted); font-size:11px; }
+.av{
+  display:grid; place-items:center; width:30px; height:30px; border-radius:50%; flex:0 0 auto;
+  font-weight:700; color:var(--ink); background:linear-gradient(180deg,var(--gold-2),var(--gold));
+}
+.card{
+  background:linear-gradient(180deg,rgba(40,29,15,.85),rgba(21,15,8,.92));
+  border:1px solid var(--line); border-radius:14px; padding:18px 20px;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+.card h3{ margin:0; font-size:15px; color:var(--gold-2); }
+.ch{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.ch .ic{ color:var(--gold); }
+.ch .more{ margin-left:auto; font-size:12px; color:var(--gold); }
+.stack{ display:grid; gap:18px; align-content:start; min-width:0; }
+.cols{ display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:18px; }
+.tiles{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; margin-bottom:18px; }
+.tile{ display:flex; gap:14px; align-items:center; padding:16px 18px; border-radius:14px; border:1px solid var(--line); background:rgba(0,0,0,.3); min-width:0; }
+.tile-i{ display:grid; place-items:center; width:46px; height:46px; border-radius:12px; flex:0 0 auto; background:rgba(217,180,91,.15); color:var(--gold); }
+.tile-v{ font:700 24px/1.1 'Cinzel',Georgia,serif; }
+.tile-l{ color:var(--muted); font-size:12.5px; }
+.empty{ padding:22px; text-align:center; color:var(--muted); border:1px dashed var(--line); border-radius:12px; }
+.note{ margin:0 0 14px; color:var(--muted); font-size:13px; }
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:9px 14px; border-radius:9px; border:1px solid transparent; font-weight:700; font-size:13px;
+}
+.btn.gold{ background:linear-gradient(180deg,var(--gold-2),var(--gold) 60%,#b8933f); color:var(--ink); }
+.btn.gold:hover{ filter:brightness(1.08); }
+.btn.ghost{ background:rgba(0,0,0,.3); border-color:var(--line); color:var(--parch); }
+.btn.ghost:hover{ border-color:var(--gold); }
+.btn.icon{ padding:8px; }
+
+/* ---------- misje ---------- */
+.add-char{ display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+.add-char input{ flex:1; min-width:180px; }
+.chars{ display:grid; gap:16px; }
+.char-h{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.char-h h3{ font:700 18px 'Cinzel',Georgia,serif; margin-right:auto; }
+.camps{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+.camp{ display:flex; flex-direction:column; gap:6px; padding:14px; border:1px solid var(--line); border-radius:12px; background:rgba(0,0,0,.28); }
+.camp.ready{ border-color:rgba(86,217,122,.5); }
+.camp b{ color:var(--parch); }
+.camp small{ color:var(--muted); font-size:12px; }
+.camp .left{ font:700 19px 'Cinzel',Georgia,serif; color:var(--gold-2); font-variant-numeric:tabular-nums; }
+.camp.ready .left{ color:var(--jade-2); }
+.camp .btn{ margin-top:6px; }
+
+/* ---------- lista wydarzeń i wiadomości ---------- */
+.ev{ display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-top:1px solid rgba(74,54,24,.6); }
+.ev:first-of-type{ border-top:0; padding-top:0; }
+.ev b{ display:block; font-weight:600; }
+.ev small{ color:var(--muted); font-size:12px; }
+.ev .del, .msg .del{ margin-left:auto; border:0; background:none; color:var(--muted); }
+.ev .del:hover, .msg .del:hover{ color:#ff8d8d; }
+.dot{ width:8px; height:8px; margin-top:6px; border-radius:50%; display:inline-block; flex:0 0 auto; }
+.dot.boss{ background:var(--blood-2); } .dot.event{ background:var(--sky-2); }
+.dot.daily{ background:var(--muted); } .dot.zbiorka{ background:var(--gold); }
+.msg{ padding:12px 0; border-top:1px solid rgba(74,54,24,.6); }
+.msg:first-of-type{ border-top:0; padding-top:0; }
+.msg-h{ display:flex; gap:8px; align-items:flex-start; }
+.msg b{ color:var(--gold-2); }
+.msg p{ margin:4px 0 6px; color:#dccba6; white-space:pre-wrap; overflow-wrap:anywhere; }
+.msg small{ color:var(--muted); font-size:12px; }
+
+/* ---------- kalendarz ---------- */
+.cal-h{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.cal-h h3{ font:700 19px 'Cinzel',Georgia,serif; text-transform:capitalize; margin-right:auto; }
+.cal{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; }
+.dow{ text-align:center; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold-dim); padding:4px 0; }
+.day{
+  display:flex; flex-direction:column; align-items:flex-start; gap:4px; min-height:92px; padding:7px 8px;
+  border:1px solid var(--line); border-radius:10px; background:rgba(0,0,0,.28); text-align:left; overflow:hidden;
+}
+button.day:hover{ border-color:var(--gold-dim); }
+.day.out{ border-color:transparent; background:transparent; }
+.day.sel{ border-color:var(--gold); }
+.dn{ display:inline-grid; place-items:center; min-width:24px; height:24px; border-radius:50%; font-weight:600; font-size:12px; }
+.day.today .dn{ background:var(--gold); color:var(--ink); }
+.dots{ display:none; gap:3px; }
+.dots .dot{ margin:0; }
+.dtx{ display:flex; flex-direction:column; gap:3px; width:100%; }
+.dtx em{ font-style:normal; font-size:10.5px; line-height:1.25; padding:2px 6px; border-radius:5px; border-left:2px solid; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dtx em.boss{ background:rgba(181,32,32,.2); border-color:var(--blood-2); color:#f3b8b8; }
+.dtx em.event{ background:rgba(79,168,255,.14); border-color:var(--sky-2); color:#b5d8ff; }
+.dtx em.zbiorka{ background:rgba(217,180,91,.14); border-color:var(--gold); color:var(--gold-2); }
+.legend{ display:flex; gap:16px; flex-wrap:wrap; margin-top:14px; color:var(--muted); font-size:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.legend .dot{ margin:0; }
+.source{ margin:12px 0 0; font-size:12px; color:var(--muted); }
+.source a{ color:var(--gold); }
+
+/* ---------- przewodnik ---------- */
+.guide{ display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px; }
+.g{ display:block; padding:14px 16px; border:1px solid var(--line); border-radius:12px; background:rgba(0,0,0,.28); transition:border-color .2s, transform .2s; }
+.g:hover{ border-color:var(--gold); transform:translateY(-2px); }
+.g b{ display:block; color:var(--gold-2); }
+.g span{ color:var(--muted); font-size:12.5px; }
+.g-h{ margin:20px 0 10px; font:700 15px 'Cinzel',Georgia,serif; color:var(--gold-2); }
+.g-h:first-child{ margin-top:0; }
+
+/* ---------- formularze ---------- */
+.form{ display:grid; gap:12px; }
+.form label{ display:grid; gap:6px; font-size:12px; color:var(--muted); }
+input, textarea{
+  width:100%; padding:10px 12px; border-radius:9px; border:1px solid var(--line); background:var(--panel);
+  color:var(--parch); font:14px 'Inter',Arial,sans-serif; resize:vertical;
+}
+input:focus, textarea:focus{ outline:none; border-color:var(--gold); }
+.two{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+#askDlg{
+  width:min(360px, calc(100% - 32px));
+  padding:22px;
+  color:var(--parch);
+  background:var(--panel-2);
+  border:2px solid var(--gold);
+  border-radius:12px;
+}
+#askDlg::backdrop{ background:rgba(0,0,0,.75); }
+#askDlg p{ margin:0 0 14px; }
+#askDlg input{ display:block; width:100%; margin:0 0 14px; padding:10px 12px; background:var(--panel); border:1px solid var(--line); border-radius:6px; color:var(--parch); font:14px 'Inter', Arial, sans-serif; }
+#askDlg input[hidden]{ display:none; }
+.ask-btns{ display:flex; justify-content:flex-end; gap:8px; }
+.gate{ display:grid; place-items:center; min-height:100vh; padding:20px; text-align:center; }
+.gate .card{ max-width:380px; }
+.gate h1{ margin:0 0 8px; font:900 24px 'Cinzel',Georgia,serif; color:var(--gold-2); }
+.gate p{ margin:0 0 16px; color:var(--muted); }
+#toast{
+  position:fixed; left:50%; bottom:26px; z-index:100; max-width:calc(100% - 32px);
+  transform:translate(-50%,20px); opacity:0; pointer-events:none;
+  padding:11px 18px; border-radius:10px; border:1px solid var(--gold); background:#1d1408; color:var(--gold-2); transition:.3s;
+}
+#toast.on{ transform:translate(-50%,0); opacity:1; }
+
+@media (max-width:1000px){ .cols{ grid-template-columns:minmax(0,1fr); } }
+@media (max-width:900px){
+  .side{ transform:translateX(-100%); }
+  .side.open{ transform:none; box-shadow:0 0 60px rgba(0,0,0,.8); }
+  .side.open ~ .scrim{ display:block; position:fixed; inset:0; z-index:40; background:rgba(0,0,0,.6); }
+  .main{ margin-left:0; padding:16px 16px 80px; }
+  .menu-btn{ display:grid; }
+}
+@media (max-width:700px){
+  .day{ min-height:54px; padding:5px; align-items:center; }
+  .dtx{ display:none; }
+  .dots{ display:flex; }
+  .cal{ gap:4px; }
+  .two{ grid-template-columns:1fr; }
+}
+@media (prefers-reduced-motion:reduce){ *{ transition:none !important; } }
+</style>
+</head>
+
+<body>
+<div id="root"></div>
+<dialog id="askDlg">
+  <form id="askForm" method="dialog">
+    <p id="askText"></p>
+    <input type="text" id="askInput" autocomplete="off" hidden>
+    <div class="ask-btns">
+      <button type="button" class="btn ghost" id="askNo">Anuluj</button>
+      <button type="submit" class="btn gold" id="askYes">OK</button>
+    </div>
+  </form>
+</dialog>
+<div id="toast" role="status"></div>
+
+<script type="module">
+import {
+  db, ref, onValue, set, push, remove,
+  firstAccount, startPresence, isStaff, logOut
+} from "./legends-core.js";
+
+const COOLDOWN = 7 * 864e5;
+const WIKI = "https://wiki.eldermt2.pl";
+
+const CAMPS = [
+  { id:"badawczy", name:"Obóz Badawczy", where:"Pustynia Yongbi · NPC Kim-Rim" },
+  { id:"kompanii", name:"Obóz Kompanii", where:"Wężowe Pole · NPC Yak-Hwang" },
+  { id:"handlowy", name:"Obóz Handlowy", where:"Góra Sohan · NPC Seon-Hae" }
+];
+
+/* dni: 0 = niedziela; "daily" nie zaśmieca siatki kalendarza */
+const SERVER_EVENTS = [
+  { days:[0],       time:"18:00", type:"event", title:"Wydarzenie Bursztynowe", where:"Żyły Bursztynu · CH3 i CH4" },
+  { days:[0],       time:"21:00", type:"boss",  title:"WB: Czerwony Smok", where:"Piekielna Ziemia · CH5" },
+  { days:[2,5],     time:"21:00", type:"boss",  title:"Metin Piekła", where:"Piekielna Ziemia · CH5" },
+  { days:[1,5],     time:"21:30", type:"event", title:"Karawana Kompanii (konwój)", where:"Wężowe Pole" },
+  { days:[6,0],     time:"19:00", type:"event", title:"Królowie Pustyni", where:"Pustynia Yongbi · CH5" },
+  { days:[0,1,2,3,4,5,6], time:"17:00", type:"daily", title:"Wyprawa Królestw", where:"M2 · do 40 lvl" },
+  { days:[0,1,2,3,4,5,6], time:"20:00", type:"daily", title:"Inwazja Królestw", where:"M2 · do 40 lvl" }
+];
+
+const GUIDE = [
+  ["Na start", [
+    ["Klasy postaci", "Wojownik, Ninja, Sura, Szaman", "/klasy/"],
+    ["Królestwa", "Frakcje i Zaopatrzenie Królestwa", "/elder/krolestwa/"],
+    ["Misje główne", "Główna ścieżka rozwoju", "/questy/glowne/"],
+    ["Vote4Buff", "Darmowy buff na 24 godziny", "/vote4buff/"]
+  ]],
+  ["Expienie i farma", [
+    ["Mapa respów", "Gdzie respi się każdy potwór", "/mapa-respow/"],
+    ["Timery respów", "Czasy odrodzenia metinów i bossów", "/systemy/timery-respow/"],
+    ["Wikipedia dropu", "Z czego wypada każdy przedmiot", "/potwory/"],
+    ["Farm Blok", "Zasady farmienia na kilku postaciach", "/elder/farm-blok/"]
+  ]],
+  ["Rozwój postaci", [
+    ["Obozy", "Misje tygodniowe i Marmur Błogosławieństwa", "/elder/obozy/"],
+    ["Bonusy 1-5", "Bonusy na ekwipunek", "/przedmioty/bonusy-1-5/"],
+    ["Bonusy PvE", "Co liczy się w walce z potworami", "/systemy/bonusy-pve/"],
+    ["Biolog", "Misje Biologa i ich nagrody", "/systemy/biolog/"],
+    ["Księgi Misji", "Misje ze skrzyniami i zarobkiem", "/elder/ksiegi-misji/"]
+  ]],
+  ["Świat gry", [
+    ["Lokacje", "Wszystkie mapy serwera", "/mapy/"],
+    ["Dungeony", "Wieża Demonów, Lochy i inne", "/dungeony/"],
+    ["Wydarzenia", "Pełny harmonogram i nagrody", "/elder/wydarzenia/"],
+    ["Gildie", "System gildii", "/systemy/gildie/"]
+  ]]
+];
+
+const ICON = {
+  home:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-5h4v5"/>',
+  camp:'<path d="M12 4 3 20h18z"/><path d="M12 12l-4 8M12 12l4 8"/>',
+  calendar:'<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  book:'<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7.5 8.5 6 8.5-6"/>',
+  left:'<path d="m15 6-6 6 6 6"/>',
+  right:'<path d="m9 6 6 6-6 6"/>',
+  trash:'<path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13"/>',
+  menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
+  hourglass:'<path d="M6 3h12M6 21h12M7 3c0 5 3 6 5 9-2 3-5 4-5 9M17 3c0 5-3 6-5 9 2 3 5 4 5 9"/>'
+};
+const ic = (n, sz=20) => `<svg class="ic" width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[n]}</svg>`;
+
+const $ = (s) => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2,"0");
+const iso = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
+const fmt = (d,o) => d.toLocaleDateString("pl-PL",o);
+/* klucz Firebase nie może zawierać . # $ [ ] / */
+const dbKey = s => encodeURIComponent(String(s).toLowerCase()).replace(/\./g,"%2E");
+
+const account = await firstAccount();
+if (account.state !== "approved") {
+  $("#root").innerHTML = `<div class="gate"><div class="card"><h1>Panel gracza</h1>
+    <p>Żeby wejść, zaloguj się na timerze. Konto musi być zaakceptowane przez administratora.</p>
+    <a class="btn gold" href="index.html">Przejdź do logowania</a></div></div>`;
+  throw new Error("brak logowania");
+}
+
+const NICK = account.profile.gameNick;
+const IS_ADMIN = isStaff(account.profile);
+startPresence(account.uid, NICK);
+
+const P = "panel/";
+const charsPath = P + "misje/" + account.uid;
+
+let offset = 0;
+const now = () => Date.now() + offset;
+let chars = {}, messages = [], publicMsgs = [], privateMsgs = [], zbiorki = [];
+let cal = null, seenAt = 0;
+
+const SEEN_KEY = "legends_panel_seen";
+try { seenAt = Number(localStorage.getItem(SEEN_KEY)) || 0; } catch(e){}
+
+const toList = map => Object.entries(map || {}).map(([id, v]) => ({ id, ...v }));
+
+onValue(ref(db, ".info/serverTimeOffset"), s => { offset = Number(s.val()) || 0; });
+onValue(ref(db, charsPath),       s => { chars = s.val() || {}; refresh(); });
+const mergeMsgs = () => { messages = [...publicMsgs, ...privateMsgs].sort((a,b) => b.at - a.at); refresh(); };
+onValue(ref(db, P + "messages"), s => { publicMsgs = toList(s.val()); mergeMsgs(); });
+onValue(ref(db, P + "direct/" + account.uid), s => { privateMsgs = toList(s.val()).map(m => ({ ...m, priv:true })); mergeMsgs(); });
+onValue(ref(db, P + "zbiorki"),    s => { zbiorki = toList(s.val()); refresh(); });
+
+/* własne okno zamiast confirm/prompt: wbudowane bywają blokowane przez przeglądarkę */
+function ask(text, withInput) {
+  const dlg = document.getElementById("askDlg");
+  const input = document.getElementById("askInput");
+  document.getElementById("askText").textContent = text;
+  input.hidden = !withInput;
+  input.value = "";
+  dlg.showModal();
+  if (withInput) input.focus();
+  return new Promise(resolve => {
+    const done = (value) => {
+      document.getElementById("askForm").onsubmit = null;
+      document.getElementById("askNo").onclick = null;
+      dlg.oncancel = null;
+      dlg.close();
+      resolve(value);
+    };
+    document.getElementById("askForm").onsubmit = (e) => { e.preventDefault(); done(withInput ? input.value : true); };
+    document.getElementById("askNo").onclick = () => done(null);
+    dlg.oncancel = (e) => { e.preventDefault(); done(null); };
+  });
+}
+
+function toast(msg){
+  const t = $("#toast"); t.textContent = msg; t.classList.add("on");
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("on"), 2600);
+}
+const failed = () => toast("Nie udało się zapisać. Spróbuj ponownie.");
+
+/* ---------- wydarzenia ---------- */
+function eventsOn(dateStr){
+  const dow = parse(dateStr).getDay();
+  const list = SERVER_EVENTS.filter(e => e.days.includes(dow)).map(e => ({ ...e }));
+  zbiorki.filter(z => z.date === dateStr).forEach(z =>
+    list.push({ id:z.id, type:"zbiorka", time:z.time || "", title:"Zbiórka: " + z.title, where:z.note || "" }));
+  return list.sort((a,b) => a.time.localeCompare(b.time));
+}
+
+function upcoming(n){
+  const out = [], d = new Date();
+  const hhmm = pad(d.getHours()) + ":" + pad(d.getMinutes());
+  for (let i = 0; i < 14 && out.length < n; i++) {
+    const day = new Date(d.getFullYear(), d.getMonth(), d.getDate() + i), key = iso(day);
+    eventsOn(key)
+      .filter(e => e.type !== "daily" && (i > 0 || e.time >= hhmm))
+      .forEach(e => out.push({ ...e, date:key }));
+  }
+  return out.slice(0, n);
+}
+
+const evRow = e => `<div class="ev"><i class="dot ${e.type}"></i><div><b>${esc(e.title)}</b>
+  <small>${e.date ? esc(fmt(parse(e.date),{weekday:"short",day:"numeric",month:"short"})) + " · " : ""}${esc(e.time)}${e.where ? " · " + esc(e.where) : ""}</small></div>
+  ${IS_ADMIN && e.type==="zbiorka" ? `<button class="del" title="Usuń zbiórkę" data-act="delz" data-id="${esc(e.id)}">${ic("trash",15)}</button>` : ""}</div>`;
+
+const msgRow = m => `<article class="msg"><div class="msg-h"><div><b>${m.priv ? "Do Ciebie: " : ""}${esc(m.title)}</b></div>
+  ${IS_ADMIN ? `<button class="del" title="Usuń" data-act="delm" data-id="${esc(m.id)}" data-priv="${m.priv ? 1 : ""}">${ic("trash",15)}</button>` : ""}</div>
+  <p>${esc(m.body)}</p><small>${esc(m.by)} · ${esc(new Date(m.at).toLocaleString("pl-PL",{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}))}</small></article>`;
+
+/* ---------- misje ---------- */
+const charList = () => toList(chars).sort((a,b) => a.name.localeCompare(b.name));
+const leftOf = (ts) => (Number(ts) || 0) + COOLDOWN - now();
+
+function leftText(ms){
+  const s = Math.ceil(ms / 1000), d = Math.floor(s / 86400);
+  return (d ? d + "d " : "") + pad(Math.floor(s % 86400 / 3600)) + ":" + pad(Math.floor(s % 3600 / 60)) + ":" + pad(s % 60);
+}
+
+function readyCount(){
+  let n = 0;
+  charList().forEach(c => CAMPS.forEach(k => { if (leftOf(c.done && c.done[k.id]) <= 0) n++; }));
+  return n;
+}
+
+function campCard(c, k){
+  const ts = c.done && c.done[k.id], left = leftOf(ts), ready = left <= 0;
+  return `<div class="camp${ready ? " ready" : ""}"><b>${k.name}</b><small>${k.where}</small>
+    <span class="left" data-ts="${Number(ts) || 0}">${ready ? "Gotowe" : leftText(left)}</span>
+    ${ready
+      ? `<button class="btn gold" data-act="done" data-id="${esc(c.id)}" data-camp="${k.id}">Misja zrobiona</button>`
+      : `<button class="btn ghost" data-act="undo" data-id="${esc(c.id)}" data-camp="${k.id}">Cofnij</button>`}
+  </div>`;
+}
+
+/* ---------- widoki ---------- */
+function vPulpit(){
+  const today = eventsOn(iso(new Date()));
+  const news = messages.slice(0,3);
+  return `<div class="tiles">
+    <div class="tile"><span class="tile-i">${ic("camp",22)}</span><div><div class="tile-v">${readyCount()}</div><div class="tile-l">Misje gotowe do zrobienia</div></div></div>
+    <div class="tile"><span class="tile-i">${ic("calendar",22)}</span><div><div class="tile-v">${today.filter(e=>e.type!=="daily").length}</div><div class="tile-l">Wydarzenia dziś</div></div></div>
+    <div class="tile"><span class="tile-i">${ic("mail",22)}</span><div><div class="tile-v">${unread()}</div><div class="tile-l">Nowe wiadomości</div></div></div>
+  </div>
+  <div class="cols">
+    <section class="card"><div class="ch">${ic("mail",18)}<h3>Ogłoszenia</h3><a class="more" href="#/wiadomosci">Wszystkie →</a></div>
+      ${news.length ? news.map(msgRow).join("") : `<div class="empty">Na razie brak ogłoszeń.</div>`}</section>
+    <section class="card"><div class="ch">${ic("calendar",18)}<h3>Najbliższe wydarzenia</h3><a class="more" href="#/kalendarz">Kalendarz →</a></div>
+      ${upcoming(6).map(evRow).join("")}</section>
+  </div>`;
+}
+
+function vMisje(){
+  const list = charList();
+  return `<p class="note">Każdy obóz odnawia się osobno, 7 dni od zrobienia misji. Lista jest przypisana do Twojego nicku, więc zobaczysz ją też na innym komputerze.</p>
+  <form class="add-char" data-form="char"><input name="name" maxlength="20" required placeholder="Nick postaci" aria-label="Nick postaci" autocomplete="off"><button class="btn gold" type="submit">Dodaj postać</button></form>
+  ${list.length ? `<div class="chars">${list.map(c => `<section class="card">
+    <div class="char-h"><h3>${esc(c.name)}</h3><button class="btn ghost icon" title="Usuń postać" aria-label="Usuń postać ${esc(c.name)}" data-act="delc" data-id="${esc(c.id)}">${ic("trash",16)}</button></div>
+    <div class="camps">${CAMPS.map(k => campCard(c,k)).join("")}</div></section>`).join("")}</div>`
+  : `<div class="empty">Dodaj pierwszą postać, żeby śledzić jej obozy.</div>`}`;
+}
+
+function vKalendarz(){
+  const t = new Date();
+  if (!cal) cal = { y:t.getFullYear(), m:t.getMonth(), sel:iso(t) };
+  const { y, m } = cal, todayStr = iso(t);
+  const startOff = (new Date(y,m,1).getDay() + 6) % 7, dim = new Date(y,m+1,0).getDate();
+  let cells = ["Pn","Wt","Śr","Cz","Pt","So","Nd"].map(d => `<div class="dow">${d}</div>`).join("");
+  for (let i = 0; i < startOff; i++) cells += `<div class="day out"></div>`;
+  for (let d = 1; d <= dim; d++) {
+    const k = iso(new Date(y,m,d)), evs = eventsOn(k).filter(e => e.type !== "daily");
+    cells += `<button class="day${k===todayStr?" today":""}${k===cal.sel?" sel":""}" data-act="day" data-id="${k}" aria-label="${d}, wydarzeń: ${evs.length}">
+      <span class="dn">${d}</span>
+      <span class="dots">${evs.slice(0,3).map(e => `<i class="dot ${e.type}"></i>`).join("")}</span>
+      <span class="dtx">${evs.slice(0,3).map(e => `<em class="${e.type}">${esc(e.time)} ${esc(e.title)}</em>`).join("")}</span>
+    </button>`;
+  }
+  const form = IS_ADMIN ? `<section class="card"><div class="ch">${ic("calendar",18)}<h3>Dodaj zbiórkę</h3></div>
+    <form class="form" data-form="zbiorka">
+      <label>Nazwa<input name="title" required maxlength="60"></label>
+      <div class="two"><label>Data<input name="date" type="date" required value="${cal.sel}"></label><label>Godzina<input name="time" type="time" value="20:00"></label></div>
+      <label>Szczegóły<input name="note" maxlength="100"></label>
+      <button class="btn gold" type="submit">Dodaj</button>
+    </form></section>` : "";
+  return `<div class="stack">
+    <section class="card">
+      <div class="cal-h"><h3>${esc(fmt(new Date(y,m,1),{month:"long",year:"numeric"}))}</h3>
+        <button class="btn ghost icon" data-act="calprev" aria-label="Poprzedni miesiąc">${ic("left",18)}</button>
+        <button class="btn ghost" data-act="caltoday">Dziś</button>
+        <button class="btn ghost icon" data-act="calnext" aria-label="Następny miesiąc">${ic("right",18)}</button></div>
+      <div class="cal">${cells}</div>
+      <div class="legend"><span><i class="dot boss"></i> Boss</span><span><i class="dot event"></i> Wydarzenie</span><span><i class="dot zbiorka"></i> Zbiórka</span></div>
+      <p class="source">Harmonogram serwera: <a href="${WIKI}/elder/wydarzenia/" target="_blank" rel="noopener">wiki ElderMT2</a></p>
+    </section>
+    <section class="card"><div class="ch">${ic("calendar",18)}<h3>${esc(fmt(parse(cal.sel),{weekday:"long",day:"numeric",month:"long"}))}</h3></div>
+      ${eventsOn(cal.sel).map(evRow).join("")}</section>
+    ${form}
+  </div>`;
+}
+
+function vPrzewodnik(){
+  return `<p class="note">Wszystkie poradniki prowadzą do oficjalnej wiki ElderMT2 i otwierają się w nowej karcie.</p>` +
+    GUIDE.map(([h, items]) => `<h2 class="g-h">${esc(h)}</h2><div class="guide">${items.map(([t,d,u]) =>
+      `<a class="g" href="${WIKI}${u}" target="_blank" rel="noopener"><b>${esc(t)}</b><span>${esc(d)}</span></a>`).join("")}</div>`).join("");
+}
+
+function vWiadomosci(){
+  return `<div class="stack"><section class="card">${messages.length ? messages.map(msgRow).join("") : `<div class="empty">Na razie brak wiadomości.</div>`}</section></div>`;
+}
+
+const ROUTES = {
+  pulpit:     { label:"Pulpit",           icon:"home",     sub:() => "Witaj, " + NICK + ".", view:vPulpit },
+  misje:      { label:"Misje tygodniowe", icon:"camp",     sub:() => "Obozy Twoich postaci i czas do kolejnej misji.", view:vMisje },
+  kalendarz:  { label:"Kalendarz",        icon:"calendar", sub:() => "Wydarzenia serwera i zbiórki.", view:vKalendarz },
+  przewodnik: { label:"Przewodnik",       icon:"book",     sub:() => "Najważniejsze strony dla nowego gracza.", view:vPrzewodnik },
+  wiadomosci: { label:"Wiadomości",       icon:"mail",     sub:() => "Wiadomości i ogłoszenia dla wszystkich graczy.", view:vWiadomosci }
+};
+
+const routeKey = () => { const k = location.hash.replace(/^#\/?/,""); return ROUTES[k] ? k : "pulpit"; };
+const unread = () => messages.filter(m => m.at > seenAt).length;
+
+$("#root").innerHTML = `
+<aside class="side" id="side">
+  <a class="brand" href="#/pulpit" aria-label="Legends, panel gracza">
+    <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="14" fill="#120d07" stroke="#d9b45b" stroke-width="3.5"/><path d="M23 13h10v29h18v9H23z" fill="#f2d98a"/></svg>
+    <b>LEGENDS</b><small>Panel gracza</small>
+  </a>
+  <nav id="nav" aria-label="Menu panelu"></nav>
+  <div class="side-foot">
+    ${IS_ADMIN ? `<a class="side-link" href="admin.html">${ic("mail",18)}<span>Panel administratora</span></a>` : ""}
+    <a class="side-link" href="index.html">${ic("hourglass",18)}<span>Przejdź do Timera</span></a>
+    <button class="side-link back" data-act="out">${ic("left",16)}<span>Wyloguj</span></button>
+    <a class="side-link back" href="start.html">${ic("left",16)}<span>Ekran wyboru</span></a>
+  </div>
+</aside>
+<div class="scrim" data-act="menu"></div>
+<main class="main">
+  <header class="top">
+    <div class="top-l">
+      <button class="menu-btn" data-act="menu" aria-label="Menu">${ic("menu",20)}</button>
+      <div><h1 id="ttl"></h1><p id="sub"></p></div>
+    </div>
+    <div class="user"><span class="av">${esc(NICK[0].toUpperCase())}</span><div><b>${esc(NICK)}</b><small>${IS_ADMIN ? "Admin" : "Gracz"}</small></div></div>
+  </header>
+  <section id="view"></section>
+</main>`;
+
+function render(){
+  const k = routeKey(), r = ROUTES[k];
+  if (k === "wiadomosci" && messages.length) {
+    seenAt = Math.max(seenAt, messages[0].at);
+    try { localStorage.setItem(SEEN_KEY, String(seenAt)); } catch(e){}
+  }
+  $("#ttl").textContent = r.label;
+  $("#sub").textContent = r.sub();
+  document.title = "Legends — " + r.label;
+  $("#view").innerHTML = r.view();
+  const n = unread();
+  $("#nav").innerHTML = Object.entries(ROUTES).map(([key, x]) =>
+    `<a class="nav-i${key===k?" on":""}" href="#/${key}"${key===k?' aria-current="page"':""}>${ic(x.icon,19)}<span>${x.label}</span>${key==="wiadomosci"&&n?`<span class="badge">${n}</span>`:""}</a>`).join("");
+}
+
+/* dane z bazy nie mogą skasować tego, co ktoś właśnie wpisuje */
+function refresh(){
+  if (document.activeElement && document.activeElement.closest("form")) return;
+  render();
+}
+
+setInterval(() => {
+  let ended = false;
+  document.querySelectorAll(".left[data-ts]").forEach(el => {
+    const ts = Number(el.dataset.ts);
+    if (!ts) return;
+    const left = leftOf(ts);
+    if (left <= 0) ended = true; else el.textContent = leftText(left);
+  });
+  if (ended) refresh();
+}, 1000);
+
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-act]"); if (!t) return;
+  const { act, id, camp, priv } = t.dataset;
+  const donePath = () => charsPath + "/" + id + "/done/" + camp;
+  if (act === "menu") $("#side").classList.toggle("open");
+  if (act === "out") logOut().then(() => { location.href = "index.html"; });
+  if (act === "done") set(ref(db, donePath()), now()).catch(failed);
+  if (act === "undo") ask("Cofnąć odliczanie tego obozu?").then(ok => { if (ok) remove(ref(db, donePath())).catch(failed); });
+  if (act === "delc") ask("Usunąć tę postać z listy?").then(ok => { if (ok) remove(ref(db, charsPath + "/" + id)).catch(failed); });
+  if (act === "day") { cal.sel = id; render(); }
+  if (act === "calprev" || act === "calnext") {
+    const d = new Date(cal.y, cal.m + (act === "calnext" ? 1 : -1), 1);
+    cal.y = d.getFullYear(); cal.m = d.getMonth(); render();
+  }
+  if (act === "caltoday") { cal = null; render(); }
+  if (act === "delm" && IS_ADMIN) ask("Usunąć tę wiadomość?").then(ok => { if (ok) remove(ref(db, P + (priv ? "direct/" + account.uid : "messages") + "/" + id)).catch(failed); });
+  if (act === "delz" && IS_ADMIN) ask("Usunąć tę zbiórkę?").then(ok => { if (ok) remove(ref(db, P + "zbiorki/" + id)).catch(failed); });
+});
+
+document.addEventListener("submit", e => {
+  const f = e.target.closest("form[data-form]"); if (!f) return;
+  e.preventDefault();
+  const fd = new FormData(f), get = k => String(fd.get(k) || "").trim();
+  const kind = f.dataset.form;
+
+  if (kind === "char") {
+    const name = get("name").slice(0,20);
+    if (!name) return;
+    const key = dbKey(name);
+    if (chars[key]) { toast("Ta postać jest już na liście"); return; }
+    set(ref(db, charsPath + "/" + key), { name }).catch(failed);
+    f.reset();
+  }
+  if (kind === "zbiorka" && IS_ADMIN) {
+    const title = get("title").slice(0,60), date = get("date");
+    if (!title || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+    push(ref(db, P + "zbiorki"), { title, date, time:get("time"), note:get("note").slice(0,100), by:NICK }).then(() => toast("Dodano zbiórkę")).catch(failed);
+    f.reset();
+  }
+  document.activeElement && document.activeElement.blur();
+  render();
+});
+
+window.addEventListener("hashchange", () => { $("#side").classList.remove("open"); render(); window.scrollTo(0,0); });
+render();
+</script>
+</body>
+</html>

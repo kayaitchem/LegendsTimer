@@ -1,0 +1,51 @@
+{
+  "rules": {
+    "users": {
+      ".read": "auth != null && (root.child('users/' + auth.uid + '/role').val() === 'owner' || root.child('users/' + auth.uid + '/role').val() === 'admin')",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && ((auth.uid === $uid && !data.exists() && newData.child('status').val() === 'pending' && newData.child('role').val() === 'user') || (data.exists() && root.child('users/' + auth.uid + '/role').val() === 'owner' && data.child('role').val() !== 'owner') || (data.exists() && root.child('users/' + auth.uid + '/role').val() === 'admin' && data.child('role').val() === 'user' && (!newData.exists() || newData.child('role').val() === 'user')))",
+        ".validate": "newData.hasChildren(['login', 'gameNick', 'status', 'role', 'createdAt']) && newData.child('login').isString() && newData.child('login').val().length <= 20 && newData.child('gameNick').isString() && newData.child('gameNick').val().length >= 1 && newData.child('gameNick').val().length <= 20 && newData.child('status').val().matches(/^(pending|approved|banned)$/) && newData.child('role').val().matches(/^(owner|admin|user)$/)"
+      }
+    },
+    "presence": {
+      ".read": "auth != null && root.child('users/' + auth.uid + '/status').val() === 'approved'",
+      "$uid": {
+        ".write": "auth != null && ((auth.uid === $uid && root.child('users/' + auth.uid + '/status').val() === 'approved') || root.child('users/' + auth.uid + '/role').val() === 'owner' || root.child('users/' + auth.uid + '/role').val() === 'admin')"
+      }
+    },
+    "rooms": {
+      "$room": {
+        ".read": "auth != null && root.child('users/' + auth.uid + '/status').val() === 'approved'",
+        ".write": "auth != null && root.child('users/' + auth.uid + '/status').val() === 'approved'"
+      }
+    },
+    "panel": {
+      "messages": {
+        ".read": "auth != null && root.child('users/' + auth.uid + '/status').val() === 'approved'",
+        "$id": {
+          ".write": "auth != null && (root.child('users/' + auth.uid + '/role').val() === 'owner' || root.child('users/' + auth.uid + '/role').val() === 'admin')"
+        }
+      },
+      "direct": {
+        ".read": "auth != null && (root.child('users/' + auth.uid + '/role').val() === 'owner' || root.child('users/' + auth.uid + '/role').val() === 'admin')",
+        "$uid": {
+          ".read": "auth != null && (auth.uid === $uid || root.child('users/' + auth.uid + '/role').val() === 'owner' || root.child('users/' + auth.uid + '/role').val() === 'admin')",
+          ".write": "auth != null && (root.child('users/' + auth.uid + '/role').val() === 'owner' || root.child('users/' + auth.uid + '/role').val() === 'admin')"
+        }
+      },
+      "zbiorki": {
+        ".read": "auth != null && root.child('users/' + auth.uid + '/status').val() === 'approved'",
+        "$id": {
+          ".write": "auth != null && (root.child('users/' + auth.uid + '/role').val() === 'owner' || root.child('users/' + auth.uid + '/role').val() === 'admin')"
+        }
+      },
+      "misje": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid && root.child('users/' + auth.uid + '/status').val() === 'approved'",
+          ".write": "auth != null && ((auth.uid === $uid && root.child('users/' + auth.uid + '/status').val() === 'approved') || root.child('users/' + auth.uid + '/role').val() === 'owner' || root.child('users/' + auth.uid + '/role').val() === 'admin')"
+        }
+      }
+    }
+  }
+}
