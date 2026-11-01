@@ -251,6 +251,7 @@ body{
 .header-links{ display:flex; justify-content:center; flex-wrap:wrap; gap:10px; }
 .panel-link[hidden]{ display:none; }
 .panel-link.quiet{ color:var(--gold-2); background:rgba(0,0,0,.35); border-color:var(--line); box-shadow:none; cursor:pointer; }
+.panel-link.quiet::after{ display:none; }
 .panel-link.admin{ color:#fff; background:linear-gradient(180deg, var(--blood-2), var(--blood)); border-color:var(--blood-2); }
 .login-admin-toggle{
   margin-top:20px;
@@ -693,6 +694,16 @@ input[type="range"]{ accent-color:var(--gold); width:110px; }
 .ch-tool:disabled{ opacity:.35; cursor:default; }
 .hist{ margin-top:6px; font-size:10.5px; line-height:1.45; color:var(--muted); overflow-wrap:anywhere; }
 .hist div:first-child{ color:var(--gold); }
+.last-kill{ margin-top:10px; font-size:11.5px; color:var(--muted); }
+.last-kill summary{ width:max-content; cursor:pointer; }
+.last-kill summary:hover{ color:var(--gold-2); }
+.last-kill form{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:6px; }
+.last-kill select, .last-kill input{
+  padding:5px 8px; color:var(--parch); background:var(--panel);
+  border:1px solid var(--line); border-radius:7px; font:12px 'Inter', Arial, sans-serif;
+}
+.last-kill input{ color-scheme:dark; }
+.last-kill .reset-btn{ width:auto; padding:5px 12px; }
 
 /* ksywka osoby, która odpaliła kanał */
 .by{
@@ -1845,6 +1856,53 @@ function buildRow(row) {
   const channels = document.createElement("div");
   channels.className = "channels";
 
+  const startChannel = (ch, at) => {
+    const minutes = parseFloat(row.minutes);
+    if (!minutes || minutes <= 0) {
+      const inp = head.querySelector('input[type="number"]');
+      inp.focus();
+      inp.style.borderColor = "#b52020";
+      setTimeout(() => inp.style.borderColor = "", 900);
+      return false;
+    }
+    const hist = [{ t: at, by: myNick() }, ...(row.ch[ch].hist || [])].slice(0, 3);
+    row.ch[ch] = windowFrom(row, hist);
+    save();
+    tick();
+    return true;
+  };
+
+  /* godzina z komunikatu w grze: bez niej trzeba było liczyć resp w pamięci */
+  const lastKill = document.createElement("details");
+  lastKill.className = "last-kill";
+  const lastKillTitle = document.createElement("summary");
+  lastKillTitle.textContent = "Ostatnie zbicie";
+  const lastKillForm = document.createElement("form");
+  const killCh = document.createElement("select");
+  killCh.setAttribute("aria-label", "Kanał");
+  for (let j = 0; j < CHANNELS; j++) killCh.appendChild(new Option("CH" + (j + 1), String(j)));
+  const killTime = document.createElement("input");
+  killTime.type = "time";
+  killTime.required = true;
+  killTime.setAttribute("aria-label", "Godzina zbicia");
+  const killAdd = document.createElement("button");
+  killAdd.type = "submit";
+  killAdd.className = "reset-btn";
+  killAdd.textContent = "DODAJ";
+  lastKillForm.append(killCh, killTime, killAdd);
+  lastKill.append(lastKillTitle, lastKillForm);
+  lastKillForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const [h, m] = killTime.value.split(":").map(Number);
+    const d = new Date(now());
+    d.setHours(h, m, 0, 0);
+    if (d.getTime() > now()) d.setDate(d.getDate() - 1);   // np. po północy wpisana 23:50
+    if (startChannel(Number(killCh.value), d.getTime())) {
+      killTime.value = "";
+      lastKill.open = false;
+    }
+  });
+
   for (let j = 0; j < CHANNELS; j++) {
     const box = document.createElement("div");
     box.className = "channel-box";
@@ -1862,21 +1920,6 @@ function buildRow(row) {
     btn.onclick = () => {
       ensureAudio();                       // odblokowanie audio pierwszym kliknięciem
       startChannel(j, now());
-    };
-
-    const startChannel = (ch, at) => {
-      const minutes = parseFloat(row.minutes);
-      if (!minutes || minutes <= 0) {
-        const inp = head.querySelector('input[type="number"]');
-        inp.focus();
-        inp.style.borderColor = "#b52020";
-        setTimeout(() => inp.style.borderColor = "", 900);
-        return;
-      }
-      const hist = [{ t: at, by: myNick() }, ...(row.ch[ch].hist || [])].slice(0, 3);
-      row.ch[ch] = windowFrom(row, hist);
-      save();
-      tick();
     };
 
     const reset = document.createElement("button");
@@ -1948,6 +1991,7 @@ function buildRow(row) {
   wrap.appendChild(preset);
   wrap.appendChild(head);
   wrap.appendChild(channels);
+  wrap.appendChild(lastKill);
   paintMute();
   return wrap;
 }
