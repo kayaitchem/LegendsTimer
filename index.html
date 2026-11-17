@@ -901,6 +901,14 @@ kbd{
   color:var(--gold-2);
 }
 
+/* duże monitory: bez tego timer jest malutkim paskiem na środku ekranu */
+@media (min-width:1800px){
+  body{ zoom:1.2; }
+  .roombar, .toolbar, .sessions, #app, footer{ max-width:1300px; }
+}
+@media (min-width:2400px){ body{ zoom:1.5; } }
+@media (min-width:3200px){ body{ zoom:2; } }
+
 @media (max-width:760px){
   body{ padding:18px 10px 50px; }
   .brand{ gap:12px; }
